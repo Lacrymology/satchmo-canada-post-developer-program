@@ -1,0 +1,68 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-07-06 19:51-0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: config.py:12
+msgid "Canada Post Shipping Dev Prog Settings"
+msgstr ""
+
+#: config.py:21
+msgid "Canada Post Customer Number"
+msgstr ""
+
+#: config.py:22
+msgid "The Customer Number assigned by Canada PostDeveloper Program"
+msgstr ""
+
+#: config.py:28
+msgid "Canada Post shipping choices available to customers."
+msgstr ""
+
+#: config.py:57
+msgid "Access production Canada Post server"
+msgstr ""
+
+#: config.py:58
+msgid "Use this when your store is in production."
+msgstr ""
+
+#: config.py:63
+msgid "Verbose logs"
+msgstr ""
+
+#: config.py:64
+msgid ""
+"Send the entire request and response to the log - for debugging help when "
+"setting up Canada Post."
+msgstr ""
+
+#: shipper.py:40
+msgid "Canada Post - {service_type}"
+msgstr ""
+
+#: shipper.py:54
+msgid "Canada Post"
+msgstr ""
+
+#: shipper.py:61
+msgid "{days} business days"
+msgstr ""
+
+#: shipper.py:63
+msgid "Unknown"
+msgstr ""
