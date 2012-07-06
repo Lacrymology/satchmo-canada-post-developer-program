@@ -25,3 +25,6 @@ pip-log.txt
 
 #PyCharm
 .idea/
+
+#virtualenv
+env/
