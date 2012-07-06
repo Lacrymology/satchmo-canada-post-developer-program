@@ -32,6 +32,7 @@ class Shipper(BaseShipper):
             self.service_code = "BAD.CODE"
             self.service_text = "Uninitialized"
         self.id = "canadapost-dev-prog-{}".format(self.service_text)
+        self.settings = config_get_group('canada_post_dp_shipping')
         super(BaseShipper, self).__init__(cart=cart, contact=contact)
 
     def __str__(self):
@@ -75,5 +76,57 @@ class Shipper(BaseShipper):
         For example, may check to see if the recipient is in an allowed country
         or location.
         """
-        return True
+        return self.is_valid
 
+    def calculate(self, cart, contact):
+        """
+        Here we decide for a packaging solution, generate a call to GetRates and
+        cache it, and calculate the cost and transit of the current service, if
+        available
+        """
+        log.debug('Start Canada Post Dev Prog calculation')
+
+        verbose = self.settings.VERBOSE_LOG.value
+
+        self.transit_time = None # unknown transit time, as yet
+        self.is_valid, self.service = self.get_rates(cart, contact)
+        self._calculated = True
+
+    def get_rates(self, cart, contact):
+        shop_details = Config.objects.get_current()
+
+        for detail in ('CUSTOMER_NUMBER', 'USERNAME', 'PASSWORD'):
+            # set up data in the API
+            setattr(canada_post, detail, self.settings[detail])
+
+        parcels = self.make_parcel(cart)
+        log.debug("Calculated Parcels: ", parcels)
+        origin = Origin(postal_code=shop_details.postal_code)
+        destination = Destination(
+            postal_code=contact.shipping_address.postal_code)
+
+        my_services = []
+        for parcel in parcels:
+            # rates depend on dimensions + origin + destination only
+            cache_key = "GetRates-{W}-{l}x{w}x{h}-{fr}-{to}".format(
+                W=parcel.weight, w=parcel.width, h=parcel.height, l=parcel.length,
+                fr=origin.postal_code, to=destination.postal_code
+            )
+            if cache.has_key(cache_key):
+                services = cache.get(cache_key)
+            else:
+                services = rating.GetRates(parcel, origin, destination)
+                cache.set(cache_key, services)
+
+            my_services.extend(filter(lambda s: s.code == self.service_code,
+                                      services))
+
+        service = None
+        valid = False
+        if len(my_services) == len(parcels):
+            service = my_services[0]
+            valid = True
+        return valid, service
+
+    def make_parcel(self, cart):
+        return Parcel()
