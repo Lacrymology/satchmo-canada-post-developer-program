@@ -17,7 +17,21 @@ SHIPPING_GROUP = ConfigurationGroup('canada_post_dp_shipping',
 config_register_list(
 
     StringValue(SHIPPING_GROUP,
-                'CUSNO',
+                'CUSTOMER_NUMBER',
+                description=_('Canada Post Customer Number'),
+                help_text=_('The Customer Number assigned by Canada Post'
+                            'Developer Program'),
+                default=u'CPC_DEMO_XML'),
+
+    StringValue(SHIPPING_GROUP,
+                'USERNAME',
+                description=_('Canada Post Customer Number'),
+                help_text=_('The Customer Number assigned by Canada Post'
+                            'Developer Program'),
+                default=u'CPC_DEMO_XML'),
+
+    StringValue(SHIPPING_GROUP,
+                'PASSWORD',
                 description=_('Canada Post Customer Number'),
                 help_text=_('The Customer Number assigned by Canada Post'
                             'Developer Program'),
