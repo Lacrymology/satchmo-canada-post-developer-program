@@ -24,7 +24,7 @@ config_register_list(
                 default=u'CPC_DEMO_XML'),
 
     MultipleStringValue(SHIPPING_GROUP,
-                        'CANADAPOST_SHIPPING_CHOICES',
+                        'SHIPPING_CHOICES',
                         description=_("Canada Post shipping choices available to customers."),
                         choices = (
                             ('DOM.RP', 'Regular Parcel'),
