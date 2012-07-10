@@ -108,7 +108,7 @@ class Shipper(BaseShipper):
         my_services = []
         for parcel in parcels:
             # rates depend on dimensions + origin + destination only
-            cache_key = "GetRates-{W}-{l}x{w}x{h}-{fr}-{to}".format(
+            cache_key = "CP-GetRates-{W}-{l}x{w}x{h}-{fr}-{to}".format(
                 W=parcel.weight, w=parcel.width, h=parcel.height, l=parcel.length,
                 fr=origin.postal_code, to=destination.postal_code
             )
