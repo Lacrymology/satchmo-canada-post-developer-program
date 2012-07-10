@@ -6,7 +6,6 @@ This dummy module can be used as a basis for creating your own
 """
 
 # Note, make sure you use decimal math everywhere!
-from decimal import Decimal
 import logging
 import canada_post
 from canada_post.service import rating
