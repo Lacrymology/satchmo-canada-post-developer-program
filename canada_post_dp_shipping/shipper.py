@@ -29,9 +29,9 @@ class Shipper(BaseShipper):
         else:
             self.service_code = "BAD.CODE"
             self.service_text = "Uninitialized"
-        self.id = "canadapost-dev-prog-{}".format(self.service_text)
+        self.id = "canadapost-dev-prog-{}".format(self.service_code)
         self.settings = config_get_group('canada_post_dp_shipping')
-        super(BaseShipper, self).__init__(cart=cart, contact=contact)
+        super(Shipper, self).__init__(cart=cart, contact=contact)
 
     def __str__(self):
         """
@@ -57,7 +57,7 @@ class Shipper(BaseShipper):
         """
         Describes the actual delivery service (Mail, FedEx, DHL, UPS, etc)
         """
-        return _("Canada Post")
+        return _("Canada Post Developer Program")
 
     def expectedDelivery(self):
         """
