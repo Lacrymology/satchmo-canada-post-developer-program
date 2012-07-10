@@ -15,7 +15,6 @@ from canada_post.util.parcel import Parcel
 from django.core.cache import cache
 from django.utils.translation import ugettext as _
 from livesettings.functions import config_get_group
-from satchmo_store.shop.models import Config
 from shipping.modules.base import BaseShipper
 
 log = logging.getLogger(__file__)
@@ -93,6 +92,7 @@ class Shipper(BaseShipper):
         self._calculated = True
 
     def get_rates(self, cart, contact):
+        from satchmo_store.shop.models import Config
         shop_details = Config.objects.get_current()
 
         for detail in ('CUSTOMER_NUMBER', 'USERNAME', 'PASSWORD'):
