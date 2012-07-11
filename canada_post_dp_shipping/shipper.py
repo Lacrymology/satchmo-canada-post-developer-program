@@ -98,7 +98,7 @@ class Shipper(BaseShipper):
                             self.settings.PASSWORD.value,)
 
         parcels = self.make_parcel(cart)
-        log.debug("Calculated Parcels: ", parcels)
+        log.debug("Calculated Parcels: %s", parcels)
         origin = Origin(postal_code=shop_details.postal_code)
         destination = Destination(
             postal_code=contact.shipping_address.postal_code)
