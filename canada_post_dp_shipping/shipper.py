@@ -15,7 +15,7 @@ from django.utils.translation import ugettext as _
 from livesettings.functions import config_get_group
 from shipping.modules.base import BaseShipper
 
-log = logging.getLogger(__file__)
+log = logging.getLogger('canada-post-dev-program.shipper')
 
 class Shipper(BaseShipper):
 
