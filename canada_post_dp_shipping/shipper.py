@@ -128,4 +128,7 @@ class Shipper(BaseShipper):
         return valid, service
 
     def make_parcel(self, cart):
-        return Parcel()
+        ret = []
+        for amt, item in cart.get_shipment_by_amount():
+            ret.append(Parcel(weight=item.smart_attr('weight') * amt))
+        return ret
