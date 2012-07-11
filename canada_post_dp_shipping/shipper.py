@@ -113,7 +113,7 @@ class Shipper(BaseShipper):
             if cache.has_key(cache_key):
                 services = cache.get(cache_key)
             else:
-                services = rating.GetRates(parcel, origin, destination)
+                services = cpa.get_rates(parcel, origin, destination)
                 cache.set(cache_key, services)
 
             my_services.extend(filter(lambda s: s.code == self.service_code,
