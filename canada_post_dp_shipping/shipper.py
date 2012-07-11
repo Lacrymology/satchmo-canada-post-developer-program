@@ -93,9 +93,9 @@ class Shipper(BaseShipper):
         from satchmo_store.shop.models import Config
         shop_details = Config.objects.get_current()
 
-        for detail in ('CUSTOMER_NUMBER', 'USERNAME', 'PASSWORD'):
-            # set up data in the API
-            setattr(canada_post, detail, self.settings[detail])
+        cpa = CanadaPostAPI(self.settings.CUSTOMER_NUMBER.value,
+                            self.settings.USERNAME.value,
+                            self.settings.PASSWORD.value,)
 
         parcels = self.make_parcel(cart)
         log.debug("Calculated Parcels: ", parcels)
