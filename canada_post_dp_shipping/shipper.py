@@ -101,7 +101,8 @@ class Shipper(BaseShipper):
         log.debug("Calculated Parcels: %s", parcels)
         origin = Origin(postal_code=shop_details.postal_code)
         destination = Destination(
-            postal_code=contact.shipping_address.postal_code)
+            postal_code=contact.shipping_address.postal_code,
+            country_code=contact.shipping_address.country.iso2_code)
 
         my_services = []
         for parcel in parcels:
