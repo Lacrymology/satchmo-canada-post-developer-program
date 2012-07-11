@@ -7,8 +7,7 @@ This dummy module can be used as a basis for creating your own
 
 # Note, make sure you use decimal math everywhere!
 import logging
-import canada_post
-from canada_post.service import rating
+from canada_post.api import CanadaPostAPI
 from canada_post.util.address import Origin, Destination
 from canada_post.util.parcel import Parcel
 from django.core.cache import cache
