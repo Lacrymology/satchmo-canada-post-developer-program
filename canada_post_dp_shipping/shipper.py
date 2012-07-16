@@ -87,7 +87,8 @@ class Shipper(BaseShipper):
         verbose = self.settings.VERBOSE_LOG.value
 
         self.transit_time = None # unknown transit time, as yet
-        self.is_valid, self.charges = self.get_rates(cart, contact)
+        self.is_valid, self.charges, self.services = self.get_rates(cart,
+                                                                   contact)
         self._calculated = True
 
     def get_rates(self, cart, contact):
@@ -128,10 +129,10 @@ class Shipper(BaseShipper):
         cost = Decimal("0.00")
         for service in services:
             cost += service.price.total
-        return True, cost
+        return True, cost, services
 
     def make_parcels(self, cart):
         ret = []
         for amt, item in cart.get_shipment_by_amount():
             ret.append(Parcel(weight=item.smart_attr('weight') * amt))
-        return ret
+        return ret  
