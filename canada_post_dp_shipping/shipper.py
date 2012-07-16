@@ -6,6 +6,7 @@ This dummy module can be used as a basis for creating your own
 """
 
 # Note, make sure you use decimal math everywhere!
+from decimal import Decimal
 import logging
 from canada_post.api import CanadaPostAPI
 from canada_post.util.address import Origin, Destination
@@ -86,7 +87,7 @@ class Shipper(BaseShipper):
         verbose = self.settings.VERBOSE_LOG.value
 
         self.transit_time = None # unknown transit time, as yet
-        self.is_valid, self.service = self.get_rates(cart, contact)
+        self.is_valid, self.charges = self.get_rates(cart, contact)
         self._calculated = True
 
     def get_rates(self, cart, contact):
@@ -97,14 +98,14 @@ class Shipper(BaseShipper):
                             self.settings.USERNAME.value,
                             self.settings.PASSWORD.value,)
 
-        parcels = self.make_parcel(cart)
+        parcels = self.make_parcels(cart)
         log.debug("Calculated Parcels: %s", parcels)
         origin = Origin(postal_code=shop_details.postal_code)
         destination = Destination(
             postal_code=contact.shipping_address.postal_code,
             country_code=contact.shipping_address.country.iso2_code)
 
-        my_services = []
+        services = []
         for parcel in parcels:
             # rates depend on dimensions + origin + destination only
             cache_key = "CP-GetRates-{W}-{l}x{w}x{h}-{fr}-{to}".format(
@@ -112,22 +113,24 @@ class Shipper(BaseShipper):
                 fr=origin.postal_code, to=destination.postal_code
             )
             if cache.has_key(cache_key):
-                services = cache.get(cache_key)
+                parcel_services = cache.get(cache_key)
             else:
-                services = cpa.get_rates(parcel, origin, destination)
-                cache.set(cache_key, services)
+                parcel_services = cpa.get_rates(parcel, origin, destination)
+                cache.set(cache_key, parcel_services)
 
-            my_services.extend(filter(lambda s: s.code == self.service_code,
-                                      services))
+            services.extend(filter(lambda s: s.code == self.service_code,
+                                      parcel_services))
 
-        service = None
         valid = False
-        if len(my_services) == len(parcels):
-            service = my_services[0]
-            valid = True
-        return valid, service
+        if len(services) != len(parcels):
+            # Not all parcels can be sent through this service
+            return False, None
+        cost = Decimal("0.00")
+        for service in services:
+            cost += service.price.total
+        return True, cost
 
-    def make_parcel(self, cart):
+    def make_parcels(self, cart):
         ret = []
         for amt, item in cart.get_shipment_by_amount():
             ret.append(Parcel(weight=item.smart_attr('weight') * amt))
