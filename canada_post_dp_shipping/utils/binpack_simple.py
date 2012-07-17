@@ -231,7 +231,7 @@ def iterate_permutations(original_packages, bins, iterlimit):
         #  not all packages could be packed in the bins. Packages are sorted
         #  by volume, which means there COULD be a package that is big
         #  though smaller in volume
-        packages = packs[-1] if packs else [] + rest
+        packages = (packs[-1] if packs else []) + rest
 
     mincost = min(costs)
     minindex = costs.index(mincost)
