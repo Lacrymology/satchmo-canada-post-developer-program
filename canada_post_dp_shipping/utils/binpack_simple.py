@@ -209,7 +209,43 @@ def packing_cost(packs, bin):
     """
     return sum(bin.volume - sum(p.volume for p in pack) for pack in packs)
 
-def binpack(packages, bin=None, iterlimit=5000):
+def iterate_permutations(original_packages, bins, iterlimit):
+    """Should not be used from without the library
+
+    Iterates through single-sized bin package algorithms to return an
+    approximation to the best fit.
+    """
+    costs = []
+    packlist = []
+    packages = sorted(original_packages, reverse=True)
+    bins.sort(reverse=True)
+
+    for bin in bins:
+        packs, rest = allpermutations(packages, bin, iterlimit)
+
+        # the cost is the sum
+        cost = packing_cost(packs, bin) + sum(packing_cost(ps[:-1], b) for ps, b in packlist)
+        packlist.append((packs, bin))
+        costs.append(cost)
+        # if rest != [] it means that
+        #  not all packages could be packed in the bins. Packages are sorted
+        #  by volume, which means there COULD be a package that is big
+        #  though smaller in volume
+        packages = packs[-1] if packs else [] + rest
+
+    mincost = min(costs)
+    minindex = costs.index(mincost)
+
+    ret = [packlist[minindex]]
+    for i in range(minindex):
+        packs, bin = packlist[i]
+        packs = packs[:-1]
+        if packs:
+            ret.append((packs, bin))
+    return ret, rest
+
+
+def binpack(packages, bins=None, iterlimit=5000):
     """Packs a list of Package() objects into a number of equal-sized bins.
 
     Returns a list of bins listing the packages within the bins and a list of packages which can't be
