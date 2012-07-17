@@ -98,7 +98,7 @@ def packlayer(bin, packages):
 
 
 def packbin(bin, packages):
-    packages.sort()
+    packages.sort(reverse=True)
     layers = []
     contentheigth = 0
     contentx = 0
@@ -124,7 +124,7 @@ def packbin(bin, packages):
 
 def packit(bin, originalpackages):
     packedbins = []
-    packages = sorted(originalpackages)
+    packages = sorted(originalpackages, reverse=True)
     while packages:
         packagesinbin, (binx, biny, binz), rest = packbin(bin, packages)
         if not packagesinbin:
