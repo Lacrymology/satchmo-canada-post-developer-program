@@ -203,6 +203,11 @@ def allpermutations(todo, bin, iterlimit=5000):
         pass
     return bestpack['bins'], bestpack['rest']
 
+def packing_cost(packs, bin):
+    """
+    We will define the cost of a packing schema as the empty space in the boxes
+    """
+    return sum(bin.volume - sum(p.volume for p in pack) for pack in packs)
 
 def binpack(packages, bin=None, iterlimit=5000):
     """Packs a list of Package() objects into a number of equal-sized bins.
