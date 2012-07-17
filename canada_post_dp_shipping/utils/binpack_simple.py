@@ -250,9 +250,11 @@ def binpack(packages, bins=None, iterlimit=5000):
 
     Returns a list of bins listing the packages within the bins and a list of packages which can't be
     packed because they are to big."""
-    if not bin:
-        bin = Package("600x400x400")
-    return allpermutations(packages, bin, iterlimit)
+    if bins is None:
+        bins = [Package("600x400x400")]
+    elif isinstance(bins, Package):
+        bins = [bins]
+    return iterate_permutations(packages, bins, iterlimit)
 
 
 def test():
