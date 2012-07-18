@@ -38,6 +38,8 @@ Copyright (c) 2010 HUDORA. All rights reserved.
 
 
 import time
+from itertools import permutations
+
 
 from package import Package
 
@@ -134,28 +136,6 @@ def packit(bin, originalpackages):
     # we now have a result, try to get a better result by rotating some bins
 
     return packedbins, rest
-
-
-# In newer Python versions these van be imported:
-# from itertools import permutations
-def product(*args, **kwds):
-    # product('ABCD', 'xy') --> Ax Ay Bx By Cx Cy Dx Dy
-    # product(range(2), repeat=3) --> 000 001 010 011 100 101 110 111
-    pools = map(tuple, args) * kwds.get('repeat', 1)
-    result = [[]]
-    for pool in pools:
-        result = [x + [y] for x in result for y in pool]
-    for prod in result:
-        yield tuple(prod)
-
-
-def permutations(iterable, r=None):
-    pool = tuple(iterable)
-    n = len(pool)
-    r = n if r is None else r
-    for indices in product(range(n), repeat=r):
-        if len(set(indices)) == r:
-            yield tuple(pool[i] for i in indices)
 
 
 class Timeout(Exception):
