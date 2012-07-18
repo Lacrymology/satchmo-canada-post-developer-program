@@ -191,15 +191,13 @@ def trypack(bin, packages, bestpack):
 
 
 def allpermutations(todo, bin, iterlimit=5000):
-    random.seed(1)
-    random.shuffle(todo)
     bestpack = dict(bincount=len(todo) + 1)
     try:
         # First try unpermuted
         trypack(bin, todo, bestpack)
         # now try permutations
         allpermutations_helper([], todo, iterlimit, trypack, bin, bestpack, 0)
-    except Timeout:
+    except Timeout, e:
         pass
     return bestpack['bins'], bestpack['rest']
 
