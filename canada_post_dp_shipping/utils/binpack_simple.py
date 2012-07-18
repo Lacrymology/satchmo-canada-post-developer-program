@@ -38,7 +38,6 @@ Copyright (c) 2010 HUDORA. All rights reserved.
 
 
 import time
-import random
 
 from package import Package
 
