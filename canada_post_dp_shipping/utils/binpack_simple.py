@@ -248,11 +248,9 @@ def iterate_permutations(original_packages, bins, iterlimit):
 
 
         costs.append(cost)
-        # if rest != [] it means that
-        #  not all packages could be packed in the bins. Packages are sorted
-        #  by volume, which means there COULD be a package that is big
-        #  though smaller in volume
-        packages = (packs[-1] if packs else []) + rest
+
+        # next iteration packages are of the last-added packages, the last box
+        packages = newpacks[-1][0][-1]
 
     mincost = min(costs)
     minindex = costs.index(mincost)
