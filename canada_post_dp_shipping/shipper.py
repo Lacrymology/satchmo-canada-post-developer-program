@@ -96,6 +96,7 @@ class Shipper(BaseShipper):
 
     def get_rates(self, cart, contact):
         from satchmo_store.shop.models import Config
+        error_ret = False, None, None
         shop_details = Config.objects.get_current()
 
         cpa = CanadaPostAPI(self.settings.CUSTOMER_NUMBER.value,
@@ -106,7 +107,7 @@ class Shipper(BaseShipper):
         if rest:
             log.error("There's not boxes big enough for some of these "
                       "products: {}".format(rest))
-            return False, None, None
+            return error_ret
         log.debug("Calculated Parcels: [%s]", ",".join("({})".format(unicode(p))
                                                        for p in parcels))
         origin = Origin(postal_code=shop_details.postal_code)
@@ -132,7 +133,7 @@ class Shipper(BaseShipper):
 
         if len(services) != len(parcels):
             # Not all parcels can be sent through this service
-            return False, None, None
+            return error_ret
         cost = Decimal("0.00")
         for service in services:
             cost += service.price.total
