@@ -154,9 +154,10 @@ class Shipper(BaseShipper):
             boxes.append(Package((box.length, box.width, box.height)))
         packed, rest = binpack(packages, boxes)
         parcels = []
-        for packs, bin in packed:
-            for pack in packs:
-                weight = sum(p.weight for p in pack)
-                parcels.append(Parcel(length = bin[0], width=bin[1],
-                                      height=bin[2], weight=weight))
-        return parcels, None
+        if not rest:
+            for packs, bin in packed:
+                for pack in packs:
+                    weight = sum(p.weight for p in pack)
+                    parcels.append(Parcel(length = bin[0], width=bin[1],
+                                          height=bin[2], weight=weight))
+        return parcels, rest
