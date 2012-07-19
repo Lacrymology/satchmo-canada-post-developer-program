@@ -200,7 +200,7 @@ def sort_bins(bins, packages):
     def bincmp(s, ot):
         c = cmp(each[s], each[ot])
         return c or cmp(s.girth, ot.girth)
-    bins.sort(cmp=bincmp)
+    bins.sort(cmp=bincmp, reverse=True)
     return bins
 
 def iterate_permutations(original_packages, bins, iterlimit):
