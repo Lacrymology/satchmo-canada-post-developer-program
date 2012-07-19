@@ -186,23 +186,64 @@ def packing_cost(packs, bin):
     """
     return sum(bin.volume - sum(p.volume for p in pack) for pack in packs)
 
+def sort_bins(bins, packages):
+    """
+    sorts the bins according to how many of the packages can each accomodate
+    """
+    each = {}
+    for bin in bins:
+        each[bin] = 0
+        for package in packages:
+            if package in bin:
+                each[bin] += 1
+    def bincmp(s, ot):
+        c = cmp(each[s], each[ot])
+        return c or cmp(s.volume, ot.volume)
+    bins.sort(cmp=bincmp)
+    return bins
+
 def iterate_permutations(original_packages, bins, iterlimit):
     """Should not be used from without the library
 
     Iterates through single-sized bin package algorithms to return an
     approximation to the best fit.
     """
+    if not bins:
+        return [], original_packages
     costs = []
     packlist = []
     packages = sorted(original_packages, reverse=True)
-    bins.sort(reverse=True)
+    bins = sort_bins(bins, packages)
 
-    for bin in bins:
+    for ix, bin in enumerate(bins):
         packs, rest = allpermutations(packages, bin, iterlimit)
 
-        # the cost is the sum
-        cost = packing_cost(packs, bin) + sum(packing_cost(ps[:-1], b) for ps, b in packlist)
-        packlist.append((packs, bin))
+        cost = packing_cost(packs, bin)
+        newpacks = []
+
+        if rest:
+            restpacks, rest = iterate_permutations(rest, bins[ix+1:], iterlimit)
+            if rest:
+                continue
+            cost += sum(packing_cost(p, b) for p, b in restpacks)
+            newpacks.extend(restpacks)
+
+        # the cost is the sum of every bigger bin's packaging cost without the
+        #  last box (since it was passed on the following
+        if ix > 0:
+            cost += sum(packing_cost(ps, b) for ps, b in packlist[ix-1][:-1])
+            for ps, b in packlist[ix-1][:-1]:
+                newpacks.append((ps, b))
+
+            ps, b = packlist[ix-1][-1]
+            if ps[:-1]:
+                cost += packing_cost(ps[:-1], b)
+                newpacks.append((ps[:-1], b))
+
+        newpacks.append((packs, bin))
+        packlist.append(newpacks)
+
+
         costs.append(cost)
         # if rest != [] it means that
         #  not all packages could be packed in the bins. Packages are sorted
@@ -213,12 +254,7 @@ def iterate_permutations(original_packages, bins, iterlimit):
     mincost = min(costs)
     minindex = costs.index(mincost)
 
-    ret = [packlist[minindex]]
-    for i in range(minindex):
-        packs, bin = packlist[i]
-        packs = packs[:-1]
-        if packs:
-            ret.append((packs, bin))
+    ret = packlist[minindex]
     return ret, rest
 
 
