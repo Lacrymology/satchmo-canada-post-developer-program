@@ -199,7 +199,7 @@ def sort_bins(bins, packages):
                 each[bin] += 1
     def bincmp(s, ot):
         c = cmp(each[s], each[ot])
-        return c or cmp(s.volume, ot.volume)
+        return c or cmp(s.girth, ot.girth)
     bins.sort(cmp=bincmp)
     return bins
 
