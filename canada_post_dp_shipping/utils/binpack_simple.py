@@ -208,6 +208,8 @@ def iterate_permutations(original_packages, bins, iterlimit):
     Iterates through single-sized bin package algorithms to return an
     approximation to the best fit.
     """
+    if not bins:
+        return [], original_packages
     costs = []
     packlist = []
     packages = sorted(original_packages, reverse=True)
@@ -217,15 +219,31 @@ def iterate_permutations(original_packages, bins, iterlimit):
         packs, rest = allpermutations(packages, bin, iterlimit)
 
         cost = packing_cost(packs, bin)
-        packlist.append((packs, bin))
+        newpacks = []
+
+        if rest:
+            restpacks, rest = iterate_permutations(rest, bins[ix+1:], iterlimit)
+            if rest:
+                continue
+            cost += sum(packing_cost(p, b) for p, b in restpacks)
+            newpacks.extend(restpacks)
+
         # the cost is the sum of every bigger bin's packaging cost without the
         #  last box (since it was passed on the following
         if ix > 0:
             cost += sum(packing_cost(ps, b) for ps, b in packlist[ix-1][:-1])
             for ps, b in packlist[ix-1][:-1]:
+                newpacks.append((ps, b))
+
             ps, b = packlist[ix-1][-1]
             if ps[:-1]:
                 cost += packing_cost(ps[:-1], b)
+                newpacks.append((ps[:-1], b))
+
+        newpacks.append((packs, bin))
+        packlist.append(newpacks)
+
+
         costs.append(cost)
         # if rest != [] it means that
         #  not all packages could be packed in the bins. Packages are sorted
@@ -236,12 +254,7 @@ def iterate_permutations(original_packages, bins, iterlimit):
     mincost = min(costs)
     minindex = costs.index(mincost)
 
-    ret = [packlist[minindex]]
-    for i in range(minindex):
-        packs, bin = packlist[i]
-        packs = packs[:-1]
-        if packs:
-            ret.append((packs, bin))
+    ret = packlist[minindex]
     return ret, rest
 
 
