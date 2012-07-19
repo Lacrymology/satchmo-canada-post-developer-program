@@ -11,6 +11,9 @@ import logging
 from canada_post.api import CanadaPostAPI
 from canada_post.util.address import Origin, Destination
 from canada_post.util.parcel import Parcel
+from canada_post_dp_shipping.models import Box
+from canada_post_dp_shipping.utils.binpack_simple import binpack
+from canada_post_dp_shipping.utils.package import Package
 from django.core.cache import cache
 from django.utils.translation import ugettext as _
 from livesettings.functions import config_get_group
@@ -99,7 +102,10 @@ class Shipper(BaseShipper):
                             self.settings.USERNAME.value,
                             self.settings.PASSWORD.value,)
 
-        parcels = self.make_parcels(cart)
+        parcels, rest = self.make_parcels(cart)
+        if rest:
+            raise Exception, ("There's no boxes big enough to ship "
+                              "({})").format(rest)
         log.debug("Calculated Parcels: %s", parcels)
         origin = Origin(postal_code=shop_details.postal_code)
         destination = Destination(
@@ -125,14 +131,31 @@ class Shipper(BaseShipper):
         valid = False
         if len(services) != len(parcels):
             # Not all parcels can be sent through this service
-            return False, None
+            return False, None, None
         cost = Decimal("0.00")
         for service in services:
             cost += service.price.total
         return True, cost, services
 
     def make_parcels(self, cart):
-        ret = []
-        for amt, item in cart.get_shipment_by_amount():
-            ret.append(Parcel(weight=item.smart_attr('weight') * amt))
-        return ret  
+        items = cart.get_shipment_by_amount()
+        packages = []
+        for amt, item in items:
+            length = item.smart_attr("length")
+            width = item.smart_attr("width")
+            height = item.smart_attr("height")
+            weight = item.smart_attr("weight")
+            for _ in range(amt):
+                packages.append(Package((length, width, height), weight=weight))
+
+        boxes = []
+        for box in Box.objects.all():
+            boxes.append(Package((box.length, box.width, box.height)))
+        packed, rest = binpack(packages, boxes)
+        parcels = []
+        for packs, bin in packed:
+            for pack in packs:
+                weight = sum(p.weight for p in pack)
+                parcels.append(Parcel(length = bin[0], width=bin[1],
+                                      height=bin[2], weight=weight))
+        return parcels, None
