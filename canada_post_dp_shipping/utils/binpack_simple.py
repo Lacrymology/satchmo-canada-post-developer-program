@@ -184,7 +184,8 @@ def packing_cost(packs, bin):
     """
     We will define the cost of a packing schema as the empty space in the boxes
     """
-    return sum(bin.volume - sum(p.volume for p in pack) for pack in packs)
+    dif = sum(bin.volume - sum(p.volume for p in pack) for pack in packs)
+    return bin.girth + dif + (1000 if bin[0] > 100 else 0)
 
 def sort_bins(bins, packages):
     """
