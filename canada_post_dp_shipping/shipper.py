@@ -104,8 +104,9 @@ class Shipper(BaseShipper):
 
         parcels, rest = self.make_parcels(cart)
         if rest:
-            raise Exception, ("There's no boxes big enough to ship "
-                              "({})").format(rest)
+            log.error("There's not boxes big enough for some of these "
+                      "products: {}".format(rest))
+            return False, None, None
         log.debug("Calculated Parcels: %s", parcels)
         origin = Origin(postal_code=shop_details.postal_code)
         destination = Destination(
