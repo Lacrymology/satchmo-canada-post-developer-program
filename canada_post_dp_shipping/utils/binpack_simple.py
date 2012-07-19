@@ -213,7 +213,7 @@ def iterate_permutations(original_packages, bins, iterlimit):
     packages = sorted(original_packages, reverse=True)
     bins = sort_bins(bins, packages)
 
-    for bin in bins:
+    for ix, bin in enumerate(bins):
         packs, rest = allpermutations(packages, bin, iterlimit)
 
         # the cost is the sum
