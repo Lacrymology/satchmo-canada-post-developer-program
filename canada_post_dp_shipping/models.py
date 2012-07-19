@@ -81,6 +81,10 @@ def create_shipping_details(sender, instance, **kwargs):
     shipper.calculate(OrderCart(order), order.contact)
 
     for service, parcel, packs in shipper.services:
+        # these will be the same every time, but whatever
+        shipping_detail.link = service.link
+        shipping_detail.code = service.code
+
         box = Box.objects.get(length=parcel.length, width=parcel.width,
                               height=parcel.height)
         description = "[{}]".format(",".join("({})".format(unicode(p))
@@ -88,3 +92,4 @@ def create_shipping_details(sender, instance, **kwargs):
         parcel_description = ParcelDescription(
             shipping_detail=shipping_detail, box=box, parcel=description)
         parcel_description.save()
+    shipping_detail.save()
