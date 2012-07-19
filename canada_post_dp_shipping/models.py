@@ -5,6 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from jsonfield.fields import JSONField
 
 from satchmo_store.shop.models import Order, OrderCart
 
@@ -49,7 +50,7 @@ class ShippingServiceDetail(models.Model):
     order = models.ForeignKey(Order, verbose_name=_("order"))
     code = models.CharField(max_length=16, verbose_name=_("code"),
                             help_text=_("Internal Canada Post product code"))
-    link = models.CharField(max_length=128, verbose_name=_("link"),
+    link = JSONField(max_length=256, verbose_name=_("link"), null=True,
                             help_text=_("Link to create the parcel on the "
                                         "Canada Post API. For internal usage"))
 
