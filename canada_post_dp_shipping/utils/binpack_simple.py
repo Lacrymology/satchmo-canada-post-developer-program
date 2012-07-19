@@ -252,11 +252,14 @@ def iterate_permutations(original_packages, bins, iterlimit):
         # next iteration packages are of the last-added packages, the last box
         packages = newpacks[-1][0][-1]
 
-    mincost = min(costs)
-    minindex = costs.index(mincost)
+    if len(costs) > 0:
+        mincost = min(costs)
+        minindex = costs.index(mincost)
 
-    ret = packlist[minindex]
-    return ret, rest
+        ret = packlist[minindex]
+        return ret, []
+    else:
+        return [], rest
 
 
 def binpack(packages, bins=None, iterlimit=5000):
