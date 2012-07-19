@@ -186,6 +186,22 @@ def packing_cost(packs, bin):
     """
     return sum(bin.volume - sum(p.volume for p in pack) for pack in packs)
 
+def sort_bins(bins, packages):
+    """
+    sorts the bins according to how many of the packages can each accomodate
+    """
+    each = {}
+    for bin in bins:
+        each[bin] = 0
+        for package in packages:
+            if package in bin:
+                each[bin] += 1
+    def bincmp(s, ot):
+        c = cmp(each[s], each[ot])
+        return c or cmp(s.volume, ot.volume)
+    bins.sort(cmp=bincmp)
+    return bins
+
 def iterate_permutations(original_packages, bins, iterlimit):
     """Should not be used from without the library
 
@@ -195,7 +211,7 @@ def iterate_permutations(original_packages, bins, iterlimit):
     costs = []
     packlist = []
     packages = sorted(original_packages, reverse=True)
-    bins.sort(reverse=True)
+    bins = sort_bins(bins, packages)
 
     for bin in bins:
         packs, rest = allpermutations(packages, bin, iterlimit)
