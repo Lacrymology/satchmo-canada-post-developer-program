@@ -6,8 +6,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from satchmo_store.shop.models import Order
-from shipping.config import shipping_method_by_key
+from satchmo_store.shop.models import Order, OrderCart
 
 class Box(models.Model):
     """
@@ -64,7 +63,9 @@ def create_shipping_details(sender, instance, **kwargs):
     """
     Create a ShippingDetail object and link it to the order being saved
     """
+    from shipping.config import shipping_method_by_key
     order = instance
     shipping_detail = ShippingDetail.objects.get_or_create(order=order)[0]
     shipper = shipping_method_by_key(order.shipping_model)
-    shipper.calculate()
+    shipper.calculate(OrderCart(order), order.contact)
+    
