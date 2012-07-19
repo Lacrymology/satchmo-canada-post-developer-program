@@ -130,7 +130,6 @@ class Shipper(BaseShipper):
             services.extend(filter(lambda s: s.code == self.service_code,
                                       parcel_services))
 
-        valid = False
         if len(services) != len(parcels):
             # Not all parcels can be sent through this service
             return False, None, None
