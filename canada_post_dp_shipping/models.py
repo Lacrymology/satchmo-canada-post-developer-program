@@ -78,7 +78,7 @@ def create_shipping_details(sender, instance, **kwargs):
         shipping_detail.save()
     else:
         # clean old parcel descriptions
-        ParcelDescription.objects.all().delete()
+        shipping_detail.parceldescription_set.all().delete()
 
     shipper = shipping_method_by_key(order.shipping_model)
     shipper.calculate(OrderCart(order), order.contact)
