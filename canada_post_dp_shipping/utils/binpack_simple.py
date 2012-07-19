@@ -216,9 +216,16 @@ def iterate_permutations(original_packages, bins, iterlimit):
     for ix, bin in enumerate(bins):
         packs, rest = allpermutations(packages, bin, iterlimit)
 
-        # the cost is the sum
-        cost = packing_cost(packs, bin) + sum(packing_cost(ps[:-1], b) for ps, b in packlist)
+        cost = packing_cost(packs, bin)
         packlist.append((packs, bin))
+        # the cost is the sum of every bigger bin's packaging cost without the
+        #  last box (since it was passed on the following
+        if ix > 0:
+            cost += sum(packing_cost(ps, b) for ps, b in packlist[ix-1][:-1])
+            for ps, b in packlist[ix-1][:-1]:
+            ps, b = packlist[ix-1][-1]
+            if ps[:-1]:
+                cost += packing_cost(ps[:-1], b)
         costs.append(cost)
         # if rest != [] it means that
         #  not all packages could be packed in the bins. Packages are sorted
