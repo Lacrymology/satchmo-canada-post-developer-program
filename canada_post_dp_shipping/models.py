@@ -26,7 +26,7 @@ class Box(models.Model):
                                 decimal_places=1,
                                 help_text=_("Shortest dimension in cm"))
     max_weight = models.DecimalField(verbose_name=_("max weight"), max_digits=5,
-                                     decimal_places=3,
+                                     decimal_places=3, default=10,
                                      help_text=_("max weight this box can "
                                                  "carry in kg"))
 
