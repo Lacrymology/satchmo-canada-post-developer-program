@@ -241,7 +241,9 @@ def iterate_permutations(original_packages, bins, iterlimit):
                 cost += packing_cost(ps[:-1], b)
                 newpacks.append((ps[:-1], b))
 
-        newpacks.append((packs, bin))
+        if packs:
+            newpacks.append((packs, bin))
+
         packlist.append(newpacks)
 
 
