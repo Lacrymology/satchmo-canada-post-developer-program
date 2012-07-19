@@ -61,6 +61,9 @@ class ParcelDescription(models.Model):
                                                              "description"),
                               editable=False,)
 
+    def __unicode__(self):
+        return "Parcel({})".format(unicode(self.box))
+
 @receiver(post_save, sender=Order)
 def create_shipping_details(sender, instance, **kwargs):
     """

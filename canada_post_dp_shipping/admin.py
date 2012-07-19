@@ -13,6 +13,7 @@ site.register(Box, BoxAdmin)
 class ParcelInline(admin.StackedInline):
     model = ParcelDescription
     readonly_fields = ['parcel', 'box']
+    extra = 0
 
 class DetailAdmin(admin.ModelAdmin):
     """
