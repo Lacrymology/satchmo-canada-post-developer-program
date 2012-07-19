@@ -107,7 +107,8 @@ class Shipper(BaseShipper):
             log.error("There's not boxes big enough for some of these "
                       "products: {}".format(rest))
             return False, None, None
-        log.debug("Calculated Parcels: %s", parcels)
+        log.debug("Calculated Parcels: [%s]", ",".join("({})".format(unicode(p))
+                                                       for p in parcels))
         origin = Origin(postal_code=shop_details.postal_code)
         destination = Destination(
             postal_code=contact.shipping_address.postal_code,
