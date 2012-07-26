@@ -7,6 +7,7 @@ This dummy module can be used as a basis for creating your own
 
 # Note, make sure you use decimal math everywhere!
 from decimal import Decimal
+from itertools import product
 import logging
 from canada_post.api import CanadaPostAPI
 from canada_post.util.address import Origin, Destination
@@ -96,17 +97,19 @@ class Shipper(BaseShipper):
 
     def get_rates(self, cart, contact):
         from satchmo_store.shop.models import Config
+        error_ret = False, None, None
         shop_details = Config.objects.get_current()
 
         cpa = CanadaPostAPI(self.settings.CUSTOMER_NUMBER.value,
                             self.settings.USERNAME.value,
                             self.settings.PASSWORD.value,)
 
+        # parcels is a list of (Parcel, pack(dimensions))
         parcels, rest = self.make_parcels(cart)
         if rest:
             log.error("There's not boxes big enough for some of these "
                       "products: {}".format(rest))
-            return False, None, None
+            return error_ret
         log.debug("Calculated Parcels: [%s]", ",".join("({})".format(unicode(p))
                                                        for p in parcels))
         origin = Origin(postal_code=shop_details.postal_code)
@@ -115,7 +118,7 @@ class Shipper(BaseShipper):
             country_code=contact.shipping_address.country.iso2_code)
 
         services = []
-        for parcel in parcels:
+        for parcel, packs in parcels:
             # rates depend on dimensions + origin + destination only
             cache_key = "CP-GetRates-{W}-{l}x{w}x{h}-{fr}-{to}".format(
                 W=parcel.weight, w=parcel.width, h=parcel.height, l=parcel.length,
@@ -127,14 +130,15 @@ class Shipper(BaseShipper):
                 parcel_services = cpa.get_rates(parcel, origin, destination)
                 cache.set(cache_key, parcel_services)
 
-            services.extend(filter(lambda s: s.code == self.service_code,
-                                      parcel_services))
+            # so services is [(Service, parcel, [packs]),...]
+            services.extend(product(filter(lambda s: s.code == self.service_code,
+                                      parcel_services), [parcel], [packs]))
 
         if len(services) != len(parcels):
             # Not all parcels can be sent through this service
-            return False, None, None
+            return error_ret
         cost = Decimal("0.00")
-        for service in services:
+        for service, parcel, packs in services:
             cost += service.price.total
         return True, cost, services
 
@@ -158,6 +162,6 @@ class Shipper(BaseShipper):
             for packs, bin in packed:
                 for pack in packs:
                     weight = sum(p.weight for p in pack)
-                    parcels.append(Parcel(length = bin[0], width=bin[1],
-                                          height=bin[2], weight=weight))
+                    parcels.append((Parcel(length = bin[0], width=bin[1],
+                                           height=bin[2], weight=weight),pack))
         return parcels, rest

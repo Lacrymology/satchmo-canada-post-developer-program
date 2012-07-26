@@ -211,6 +211,8 @@ def iterate_permutations(original_packages, bins, iterlimit):
     """
     if not bins:
         return [], original_packages
+    if not original_packages:
+        return original_packages, []
     costs = []
     packlist = []
     packages = sorted(original_packages, reverse=True)
