@@ -27,7 +27,10 @@ config_register_list(
     BooleanValue(SHIPPING_GROUP,
                  'LIVE',
                  description=_('Access production Canada Post server'),
-                 help_text=_('Use this when your store is in production.'),
+                 help_text=_("Use this when your store is in production. "
+                             "NOTE: the values you'll see when in development "
+                             "mode will NOT reflect the real packaging. This "
+                             "is a Canada Post limitation"),
                  default=False),
 
     StringValue(SHIPPING_GROUP,
