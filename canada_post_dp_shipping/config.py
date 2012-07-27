@@ -40,15 +40,17 @@ config_register_list(
     StringValue(SHIPPING_GROUP,
                 'USERNAME',
                 description=_('Canada Post Username'),
-                help_text=_('The Customer Number assigned by Canada Post'
-                            'Developer Program'),
+                help_text=_('The Canada Post username part of the production '
+                            'API production Key Number'),
                 default=u'CPC_DEMO_XML'),
 
     StringValue(SHIPPING_GROUP,
                 'PASSWORD',
                 description=_('Canada Post Password'),
-                help_text=_('The Customer Number assigned by Canada Post'
-                            'Developer Program'),
+                help_text=_('The Canada Post password part of the production '
+                            'API Key Number'),
+                default=u'CPC_DEMO_XML'),
+
                 default=u'CPC_DEMO_XML'),
 
     ContractShipping,
