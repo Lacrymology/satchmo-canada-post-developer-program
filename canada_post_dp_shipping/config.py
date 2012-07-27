@@ -45,12 +45,24 @@ config_register_list(
                 default=u'CPC_DEMO_XML'),
 
     StringValue(SHIPPING_GROUP,
+                'USERNAME_DEBUG',
+                description=_('Canada Post Username (Debug)'),
+                help_text=_('The Canada Post username part of the development '
+                            'API Key Number'),
+                default='CPC_DEMO_XML'),
+
+    StringValue(SHIPPING_GROUP,
                 'PASSWORD',
                 description=_('Canada Post Password'),
                 help_text=_('The Canada Post password part of the production '
                             'API Key Number'),
                 default=u'CPC_DEMO_XML'),
 
+    StringValue(SHIPPING_GROUP,
+                'PASSWORD_DEBUG',
+                description=_('Canada Post Password (Debug)'),
+                help_text=_('The Canada Post password part of the development '
+                            'API Key Number'),
                 default=u'CPC_DEMO_XML'),
 
     ContractShipping,
