@@ -154,7 +154,7 @@ class Package(object):
 
     def __str__(self):
         if self.weight:
-            return "%dx%dx%d %dg" % (self.heigth, self.width, self.length, self.weight)
+            return "%dx%dx%d %dkg" % (self.heigth, self.width, self.length, self.weight)
         else:
             return "%dx%dx%d" % (self.heigth, self.width, self.length)
 
