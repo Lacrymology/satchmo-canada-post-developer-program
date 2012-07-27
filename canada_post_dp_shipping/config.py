@@ -15,6 +15,13 @@ SHIPPING_GROUP = ConfigurationGroup('canada_post_dp_shipping',
                                     requiresvalue='canada_post_dp_shipping',
 )
 
+# values that are needed for later use
+ContractShipping = BooleanValue(SHIPPING_GROUP,
+                                'CONTRACT_SHIPPING',
+                                description=_('Contract Shipping'),
+                                help_text=_('Use Contract Shipping method'),
+                                default=True)
+
 config_register_list(
 
     BooleanValue(SHIPPING_GROUP,
@@ -43,6 +50,16 @@ config_register_list(
                 help_text=_('The Customer Number assigned by Canada Post'
                             'Developer Program'),
                 default=u'CPC_DEMO_XML'),
+
+    ContractShipping,
+
+    StringValue(SHIPPING_GROUP,
+                'CONTRACT_NUMBER',
+                description=_('Contract Number'),
+                help_text=_('The contract number with Canada Post. Required '
+                            'for Contract Shipment'),
+                requires=ContractShipping,
+                default='CPC_DEMO_XML'),
 
     MultipleStringValue(SHIPPING_GROUP,
                         'SHIPPING_CHOICES',
