@@ -52,7 +52,13 @@ class DetailAdmin(admin.ModelAdmin):
     """
     Admin for an order's detail
     """
+    fields = ['order', 'code']
     inlines = [ParcelInline]
+    readonly_fields = ['order']
+    list_display = ['__unicode__', 'order', 'code', 'parcel_count']
+    actions_on_bottom = True
+    actions_selection_counter = True
+
 site.register(ShippingServiceDetail, DetailAdmin)
 
 class ShippingServiceDetailInline(admin.StackedInline):
