@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from setuptools import find_packages, setup
-VERSION = "0.0.3"
+VERSION = "0.0.4"
 
 setup(
     name='satchmo-canada-post-developer-program',
