@@ -51,6 +51,9 @@ class ShippingServiceDetail(models.Model):
     code = models.CharField(max_length=16, verbose_name=_("code"),
                             help_text=_("Internal Canada Post product code"))
 
+    def get_service(self):
+        return Service(data={'code': self.code})
+
 class ParcelDescription(models.Model):
     shipping_detail = models.ForeignKey(ShippingServiceDetail)
     box = models.ForeignKey(Box)
