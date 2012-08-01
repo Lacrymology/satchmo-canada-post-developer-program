@@ -9,6 +9,8 @@ This dummy module can be used as a basis for creating your own
 from decimal import Decimal
 from itertools import product
 import logging
+from canada_post_dp_shipping.utils import (get_origin, get_destination,
+                                           canada_post_api_kwargs)
 from canada_post.api import CanadaPostAPI
 from canada_post.util.address import Origin, Destination
 from canada_post.util.parcel import Parcel
@@ -100,9 +102,9 @@ class Shipper(BaseShipper):
         error_ret = False, None, None
         shop_details = Config.objects.get_current()
 
-        cpa = CanadaPostAPI(self.settings.CUSTOMER_NUMBER.value,
-                            self.settings.USERNAME.value,
-                            self.settings.PASSWORD.value,)
+        cpa_kwargs = canada_post_api_kwargs(self.settings)
+
+        cpa = CanadaPostAPI(**cpa_kwargs)
 
         # parcels is a list of (Parcel, pack(dimensions))
         parcels, rest = self.make_parcels(cart)
@@ -112,10 +114,8 @@ class Shipper(BaseShipper):
             return error_ret
         log.debug("Calculated Parcels: [%s]", ",".join("({})".format(unicode(p))
                                                        for p in parcels))
-        origin = Origin(postal_code=shop_details.postal_code)
-        destination = Destination(
-            postal_code=contact.shipping_address.postal_code,
-            country_code=contact.shipping_address.country.iso2_code)
+        origin = get_origin(shop_details)
+        destination = get_destination(contact)
 
         services = []
         for parcel, packs in parcels:
