@@ -11,6 +11,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from canada_post.service import Service
 from canada_post.util.parcel import Parcel
+from canada_post.service.contract_shipping import (Shipment as CPAShipment)
 from jsonfield.fields import JSONField
 
 from satchmo_store.shop.models import Order, OrderCart
@@ -137,6 +138,26 @@ class Shipment(models.Model):
             filename = filename + ".pdf"
         self.label = File(img_temp, filename)
         self.save()
+
+    def get_shipment(self):
+        """
+        Creates a canada_post.utils.Shipment object for use with the
+        Canada Post API
+        """
+        # if this instance was created from a Shipment, we've got it saved.
+        if self.shipment:
+            return self.shipment
+        # else, we need to construct it
+        kwargs = {
+            'id': self.id,
+            'status': self.status,
+            'tracking_pin': self.tracking_pin,
+            'return_tracking_pin': self.return_tracking_pin,
+            'links': {}
+        }
+        for link in self.shipmentlink_set.all():
+            kwargs[link.type] = link.data
+        return CPAShipment(**kwargs)
 
     def __init__(self, *args, **kwargs):
         if 'shipment' in kwargs:
