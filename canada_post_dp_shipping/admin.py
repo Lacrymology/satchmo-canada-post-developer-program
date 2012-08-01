@@ -56,6 +56,8 @@ class DetailAdmin(admin.ModelAdmin):
     inlines = [ParcelInline]
     readonly_fields = ['order']
     list_display = ['__unicode__', 'order', 'code', 'parcel_count']
+    actions = ['void_shipments', 'create_shipments', 'get_labels',
+               'transmit_shipments']
     actions_on_bottom = True
     actions_selection_counter = True
 
@@ -77,6 +79,18 @@ class DetailAdmin(admin.ModelAdmin):
         )
         return urlpatterns + super(DetailAdmin, self).get_urls()
 
+    def get_parcels(self):
+        pass
+
+    def void_shipments(self, request, queryset=None, id=-1):
+        return HttpResponseRedirect("..")
+    void_shipments.short_description = _("Cancel created shipments for the "
+                                         "selected orders")
+
+    def transmit_shipments(self, request, queryset=None, id=-1):
+        return HttpResponseRedirect("..")
+    transmit_shipments.short_description = _("Transmit shipments for the "
+                                             "selected orders")
 site.register(ShippingServiceDetail, DetailAdmin)
 
 class ShippingServiceDetailInline(admin.StackedInline):
