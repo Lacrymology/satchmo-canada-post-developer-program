@@ -70,6 +70,20 @@ class ParcelDescription(models.Model):
                                  help_text=_("Total weight of the parcel, "
                                              "in kilograms"))
 
+    def __init__(self, *args, **kwargs):
+        if 'parcel' in kwargs:
+            pass
+        elif 'packs' in kwargs:
+            packs = kwargs.pop('packs')
+            parcel = "[{}]".format(",".join("({})".format(unicode(p))
+                for p in packs))
+            weight = sum(p.weight for p in packs)
+            kwargs.update({
+                'parcel': parcel,
+                'weight': weight,
+                })
+        super(ParcelDescription, self).__init__(*args, **kwargs)
+
     def get_parcel(self):
         return Parcel(length=self.box.length, width=self.box.width,
                       height=self.box.height, weight=self.weight)
