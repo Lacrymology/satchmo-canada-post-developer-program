@@ -57,6 +57,9 @@ class ShippingServiceDetail(models.Model):
     def parcel_count(self):
         return self.parceldescription_set.count()
 
+    def __unicode__(self):
+        return _("Shipping service detail for {order}").format(order=self.order)
+
 class ParcelDescription(models.Model):
     shipping_detail = models.ForeignKey(ShippingServiceDetail)
     box = models.ForeignKey(Box)
