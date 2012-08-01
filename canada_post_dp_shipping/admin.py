@@ -25,6 +25,24 @@ class BoxAdmin(admin.ModelAdmin):
     list_display = ['__unicode__', 'girth', 'volume']
 site.register(Box, BoxAdmin)
 
+class LinkInline(admin.StackedInline):
+    model = ShipmentLink
+    readonly_fields = ['type', 'data']
+    extra = 0
+
+class ShipmentAdmin(admin.ModelAdmin):
+    inlines = [LinkInline]
+site.register(Shipment, ShipmentAdmin)
+
+class ShipmentInline(admin.StackedInline):
+    model = Shipment
+    extra = 0
+
+class ParcelAdmin(admin.ModelAdmin):
+    readonly_fields = ['parcel']
+    inlines = [ShipmentInline]
+site.register(ParcelDescription, ParcelAdmin)
+
 class ParcelInline(admin.StackedInline):
     model = ParcelDescription
     readonly_fields = ['parcel', 'box']
@@ -36,3 +54,6 @@ class DetailAdmin(admin.ModelAdmin):
     """
     inlines = [ParcelInline]
 site.register(ShippingServiceDetail, DetailAdmin)
+
+class ShippingServiceDetailInline(admin.StackedInline):
+    model = DetailAdmin
