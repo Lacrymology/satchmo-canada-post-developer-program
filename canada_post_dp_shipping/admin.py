@@ -113,6 +113,49 @@ class DetailAdmin(admin.ModelAdmin):
     create_shipments.short_description = _("Create shipments on the Canada "
                                           "Post server for the selected orders")
 
+    def get_labels(self, request, queryset=None, id=-1):
+        if queryset is None:
+            queryset = [get_object_or_404(ShippingServiceDetail,
+                                          id=id)]
+        else:
+            queryset = queryset.select_related()
+
+        args = canada_post_api_kwargs(self.settings)
+
+        files = []
+        orders = []
+        for detail in queryset:
+            for parcel in detail.parceldescription_set.select_related().all():
+                shipment = parcel.shipment
+                if not shipment.label:
+                    try:
+                        shipment.download_label(args['username'], args['password'])
+                    except Shipment.Wait:
+                        self.message_user(_("Failed downloading label for "
+                                            "shipment {id} because the "
+                                            "Canada Post server is busy, "
+                                            "please wait a couple of minutes "
+                                            "and try again").format(
+                            id=shipment.id))
+                files.append(shipment.label.file)
+            orders.append(detail.order)
+
+        tmp = tempfile.mkstemp(suffix=".zip")
+        tf = zipfile.ZipFile(tmp[1], mode="w")
+        for fileobj in files:
+            filename = os.path.basename(fileobj.name)
+            tf.write(fileobj.name, filename)
+        tf.close()
+
+        response = HttpResponse(File(file(tmp[1])), mimetype="application/zip")
+        response['Content-disposition'] = ('attachment; '
+                                           'filename='
+                                           '"labels_for_orders_{}.zip"').format(
+            "-".join(str(o.id) for o in orders))
+        return response
+    get_labels.short_description = _("Get label links for the selected "
+                                          "orders")
+
     def void_shipments(self, request, queryset=None, id=-1):
         return HttpResponseRedirect("..")
     void_shipments.short_description = _("Cancel created shipments for the "
