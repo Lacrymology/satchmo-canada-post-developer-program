@@ -82,6 +82,37 @@ class DetailAdmin(admin.ModelAdmin):
     def get_parcels(self):
         pass
 
+    def create_shipments(self, request, queryset=None, id=-1):
+        from satchmo_store.shop.models import Config
+        if queryset is None:
+            queryset = [get_object_or_404(ShippingServiceDetail,
+                                          id=id)]
+        else:
+            queryset = queryset.select_related()
+
+        shop_details = Config.objects.get_current()
+        cpa_kwargs = canada_post_api_kwargs(self.settings)
+        cpa = CanadaPostAPI(**cpa_kwargs)
+        origin = get_origin(shop_details)
+        for detail in queryset:
+            destination = get_destination(detail.order.contact)
+            group = unicode(detail.id)
+            cnt = 0
+            for parcel in detail.parceldescription_set.select_related().all():
+                shipment = cpa.create_shipment(parcel=parcel.get_parcel(),
+                                               origin=origin,
+                                               destination=destination,
+                                               service=detail.get_service(),
+                                               group=group)
+                Shipment(shipment=shipment, parcel=parcel).save()
+                cnt += 1
+            self.message_user(request, _("{count} shipments created for order "
+                                         "{order}").format(count=cnt,
+                                                           order=detail.order))
+        return HttpResponseRedirect("..")
+    create_shipments.short_description = _("Create shipments on the Canada "
+                                          "Post server for the selected orders")
+
     def void_shipments(self, request, queryset=None, id=-1):
         return HttpResponseRedirect("..")
     void_shipments.short_description = _("Cancel created shipments for the "
