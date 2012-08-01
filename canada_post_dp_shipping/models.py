@@ -121,6 +121,23 @@ class Shipment(models.Model):
     label = models.FileField(upload_to=label_path, blank=True, null=True,
                              verbose_name=_("label"))
 
+    def download_label(self, username, password):
+        link = self.shipmentlink_set.get(type='label')
+        res = requests.get(link.data['href'], auth=(username, password))
+        if res.status_code == 202:
+            raise Shipment.Wait
+        if not res.ok:
+            res.raise_for_status()
+        img_temp = NamedTemporaryFile(delete=True)
+        img_temp.write(res.content)
+        img_temp.flush()
+        filepath = requests.utils.urlparse(link.data['href']).path
+        filename = path.basename(filepath)
+        if not filename.lower().endswith('.pdf'):
+            filename = filename + ".pdf"
+        self.label = File(img_temp, filename)
+        self.save()
+
     def __init__(self, *args, **kwargs):
         if 'shipment' in kwargs:
             shipment = kwargs.pop('shipment')
@@ -133,6 +150,9 @@ class Shipment(models.Model):
                 })
             self.shipment = shipment
         super(Shipment, self).__init__(*args, **kwargs)
+
+    class Wait(Exception):
+        pass
 
 @receiver(post_save, sender=Shipment)
 def create_links(sender, instance, created, **kwargs):
