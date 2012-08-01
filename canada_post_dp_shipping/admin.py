@@ -59,6 +59,10 @@ class DetailAdmin(admin.ModelAdmin):
     actions_on_bottom = True
     actions_selection_counter = True
 
+    def __init__(self, *args, **kwargs):
+        super(DetailAdmin, self).__init__(*args, **kwargs)
+        self.settings = config_get_group('canada_post_dp_shipping')
+
 site.register(ShippingServiceDetail, DetailAdmin)
 
 class ShippingServiceDetailInline(admin.StackedInline):
