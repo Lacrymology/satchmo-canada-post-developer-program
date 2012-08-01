@@ -11,16 +11,16 @@ from itertools import product
 import logging
 from canada_post_dp_shipping.utils import (get_origin, get_destination,
                                            canada_post_api_kwargs)
-from canada_post.api import CanadaPostAPI
-from canada_post.util.address import Origin, Destination
-from canada_post.util.parcel import Parcel
-from canada_post_dp_shipping.models import Box
-from canada_post_dp_shipping.utils.binpack_simple import binpack
-from canada_post_dp_shipping.utils.package import Package
 from django.core.cache import cache
 from django.utils.translation import ugettext as _
 from livesettings.functions import config_get_group
 from shipping.modules.base import BaseShipper
+
+from canada_post.api import CanadaPostAPI
+from canada_post.util.parcel import Parcel
+from canada_post_dp_shipping.models import Box
+from canada_post_dp_shipping.utils.binpack_simple import binpack
+from canada_post_dp_shipping.utils.package import Package
 
 log = logging.getLogger('canada-post-dev-program.shipper')
 
@@ -47,14 +47,16 @@ class Shipper(BaseShipper):
         
     def description(self):
         """
-        A basic description that will be displayed to the user when selecting their shipping options
+        A basic description that will be displayed to the user when selecting
+        their shipping options
         """
         return _("Canada Post - {service_type}".format(
             service_type=self.service_text))
 
     def cost(self):
         """
-        Complex calculations can be done here as long as the return value is a decimal figure
+        Complex calculations can be done here as long as the return value is a
+        decimal figure
         """
         assert self._calculated
         return self.charges
