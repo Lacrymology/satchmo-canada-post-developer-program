@@ -70,6 +70,9 @@ class ParcelDescription(models.Model):
                                  help_text=_("Total weight of the parcel, "
                                              "in kilograms"))
 
+    def get_parcel(self):
+        return Parcel(length=self.box.length, width=self.box.width,
+                      height=self.box.height, weight=self.weight)
 
     def __unicode__(self):
         return "Parcel({})".format(unicode(self.box))
