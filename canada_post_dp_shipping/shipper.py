@@ -9,16 +9,18 @@ This dummy module can be used as a basis for creating your own
 from decimal import Decimal
 from itertools import product
 import logging
-from canada_post.api import CanadaPostAPI
-from canada_post.util.address import Origin, Destination
-from canada_post.util.parcel import Parcel
-from canada_post_dp_shipping.models import Box
-from canada_post_dp_shipping.utils.binpack_simple import binpack
-from canada_post_dp_shipping.utils.package import Package
+from canada_post_dp_shipping.utils import (get_origin, get_destination,
+                                           canada_post_api_kwargs)
 from django.core.cache import cache
 from django.utils.translation import ugettext as _
 from livesettings.functions import config_get_group
 from shipping.modules.base import BaseShipper
+
+from canada_post.api import CanadaPostAPI
+from canada_post.util.parcel import Parcel
+from canada_post_dp_shipping.models import Box
+from canada_post_dp_shipping.utils.binpack_simple import binpack
+from canada_post_dp_shipping.utils.package import Package
 
 log = logging.getLogger('canada-post-dev-program.shipper')
 
@@ -37,7 +39,7 @@ class Shipper(BaseShipper):
         self.settings = config_get_group('canada_post_dp_shipping')
         super(Shipper, self).__init__(cart=cart, contact=contact)
 
-    def __str__(self):
+    def __unicode__(self):
         """
         This is mainly helpful for debugging purposes
         """
@@ -45,14 +47,16 @@ class Shipper(BaseShipper):
         
     def description(self):
         """
-        A basic description that will be displayed to the user when selecting their shipping options
+        A basic description that will be displayed to the user when selecting
+        their shipping options
         """
         return _("Canada Post - {service_type}".format(
             service_type=self.service_text))
 
     def cost(self):
         """
-        Complex calculations can be done here as long as the return value is a decimal figure
+        Complex calculations can be done here as long as the return value is a
+        decimal figure
         """
         assert self._calculated
         return self.charges
@@ -100,9 +104,9 @@ class Shipper(BaseShipper):
         error_ret = False, None, None
         shop_details = Config.objects.get_current()
 
-        cpa = CanadaPostAPI(self.settings.CUSTOMER_NUMBER.value,
-                            self.settings.USERNAME.value,
-                            self.settings.PASSWORD.value,)
+        cpa_kwargs = canada_post_api_kwargs(self.settings)
+
+        cpa = CanadaPostAPI(**cpa_kwargs)
 
         # parcels is a list of (Parcel, pack(dimensions))
         parcels, rest = self.make_parcels(cart)
@@ -112,10 +116,8 @@ class Shipper(BaseShipper):
             return error_ret
         log.debug("Calculated Parcels: [%s]", ",".join("({})".format(unicode(p))
                                                        for p in parcels))
-        origin = Origin(postal_code=shop_details.postal_code)
-        destination = Destination(
-            postal_code=contact.shipping_address.postal_code,
-            country_code=contact.shipping_address.country.iso2_code)
+        origin = get_origin(shop_details)
+        destination = get_destination(contact)
 
         services = []
         for parcel, packs in parcels:

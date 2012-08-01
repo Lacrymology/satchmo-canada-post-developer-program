@@ -1,10 +1,16 @@
 """
 Models for the canada post developer program's shipping method
 """
+from os import path
+import requests
+from django.core.files import File
+from django.core.files.temp import NamedTemporaryFile
 from django.utils.translation import ugettext_lazy as _
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from canada_post.service import Service
+from canada_post.util.parcel import Parcel
 from jsonfield.fields import JSONField
 
 from satchmo_store.shop.models import Order, OrderCart
@@ -47,22 +53,123 @@ class ShippingServiceDetail(models.Model):
     """
     Save shipping details, such as link and product code
     """
-    order = models.ForeignKey(Order, verbose_name=_("order"))
+    order = models.ForeignKey(Order, verbose_name=_("order"), editable=False)
     code = models.CharField(max_length=16, verbose_name=_("code"),
                             help_text=_("Internal Canada Post product code"))
-    link = JSONField(max_length=256, verbose_name=_("link"), null=True,
-                            help_text=_("Link to create the parcel on the "
-                                        "Canada Post API. For internal usage"))
+
+    def get_service(self):
+        return Service(data={'code': self.code})
+
+    def parcel_count(self):
+        return self.parceldescription_set.count()
+
+    def __unicode__(self):
+        return _("Shipping service detail for {order}").format(order=self.order)
 
 class ParcelDescription(models.Model):
     shipping_detail = models.ForeignKey(ShippingServiceDetail)
     box = models.ForeignKey(Box)
-    parcel = models.CharField(max_length=256, verbose_name=_("parcel "
-                                                             "description"),
+    parcel = models.CharField(max_length=256,
+                              verbose_name=_("parcel description"),
+                              help_text=_("List of packages that go inside "
+                                          "this parcel"),
                               editable=False,)
+    weight = models.DecimalField(max_digits=5, decimal_places=3,
+                                 verbose_name=_("weight"),
+                                 help_text=_("Total weight of the parcel, "
+                                             "in kilograms"))
+
+    def __init__(self, *args, **kwargs):
+        if 'parcel' in kwargs:
+            pass
+        elif 'packs' in kwargs:
+            packs = kwargs.pop('packs')
+            parcel = "[{}]".format(",".join("({})".format(unicode(p))
+                for p in packs))
+            weight = sum(p.weight for p in packs)
+            kwargs.update({
+                'parcel': parcel,
+                'weight': weight,
+                })
+        super(ParcelDescription, self).__init__(*args, **kwargs)
+
+    def get_parcel(self):
+        return Parcel(length=self.box.length, width=self.box.width,
+                      height=self.box.height, weight=self.weight)
 
     def __unicode__(self):
         return "Parcel({})".format(unicode(self.box))
+
+class Shipment(models.Model):
+    """
+    Shipment data, returned by Canada Post's Create Shipment service
+    """
+    def label_path(instance, filename):
+        """
+        Construct the path for the label file
+        """
+        return ("canada_post_dp_shipping/labels/"
+                "order_{order_id}__shipment_{shipment_id}__{filename}").format(
+            order_id=instance.parcel.shipping_detail.order.id,
+            shipment_id = instance.id, filename=filename)
+
+    id = models.CharField(max_length=32, primary_key=True, editable=False)
+    tracking_pin = models.BigIntegerField(blank=True, default="")
+    return_tracking_pin = models.BigIntegerField(blank=True, null=True, default="")
+    status = models.CharField(max_length=14)
+    parcel = models.OneToOneField(ParcelDescription, verbose_name=_("parcel"))
+    label = models.FileField(upload_to=label_path, blank=True, null=True,
+                             verbose_name=_("label"))
+
+    def download_label(self, username, password):
+        link = self.shipmentlink_set.get(type='label')
+        res = requests.get(link.data['href'], auth=(username, password))
+        if res.status_code == 202:
+            raise Shipment.Wait
+        if not res.ok:
+            res.raise_for_status()
+        img_temp = NamedTemporaryFile(delete=True)
+        img_temp.write(res.content)
+        img_temp.flush()
+        filepath = requests.utils.urlparse(link.data['href']).path
+        filename = path.basename(filepath)
+        if not filename.lower().endswith('.pdf'):
+            filename = filename + ".pdf"
+        self.label = File(img_temp, filename)
+        self.save()
+
+    def __init__(self, *args, **kwargs):
+        if 'shipment' in kwargs:
+            shipment = kwargs.pop('shipment')
+            kwargs.update({
+                'id': shipment.id,
+                'status': shipment.status,
+                'tracking_pin': getattr(shipment, 'tracking_pin', None),
+                'return_tracking_pin': getattr(shipment, 'return_tracking_pin',
+                                               None),
+                })
+            self.shipment = shipment
+        super(Shipment, self).__init__(*args, **kwargs)
+
+    class Wait(Exception):
+        pass
+
+@receiver(post_save, sender=Shipment)
+def create_links(sender, instance, created, **kwargs):
+    if created:
+        shipment  = getattr(instance, 'shipment', None)
+        if shipment:
+            for type, link in getattr(shipment, 'links', {}).items():
+                link = ShipmentLink(shipment=instance, type=type, data=link)
+                link.save()
+
+class ShipmentLink(models.Model):
+    """
+    Any of a number of links returned by Canada Post at CreateShipment time
+    """
+    shipment = models.ForeignKey(Shipment)
+    type = models.CharField(max_length=16)
+    data = JSONField(blank=True)
 
 @receiver(post_save, sender=Order)
 def create_shipping_details(sender, instance, **kwargs):
@@ -85,14 +192,11 @@ def create_shipping_details(sender, instance, **kwargs):
 
     for service, parcel, packs in shipper.services:
         # these will be the same every time, but whatever
-        shipping_detail.link = service.link
         shipping_detail.code = service.code
 
         box = Box.objects.get(length=parcel.length, width=parcel.width,
                               height=parcel.height)
-        description = "[{}]".format(",".join("({})".format(unicode(p))
-                                                           for p in packs))
         parcel_description = ParcelDescription(
-            shipping_detail=shipping_detail, box=box, parcel=description)
+            shipping_detail=shipping_detail, box=box, packs=packs)
         parcel_description.save()
     shipping_detail.save()
