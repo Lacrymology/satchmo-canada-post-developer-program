@@ -1,10 +1,16 @@
 """
 Models for the canada post developer program's shipping method
 """
+from os import path
+import requests
+from django.core.files import File
+from django.core.files.temp import NamedTemporaryFile
 from django.utils.translation import ugettext_lazy as _
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from canada_post.service import Service
+from canada_post.util.parcel import Parcel
 from jsonfield.fields import JSONField
 
 from satchmo_store.shop.models import Order, OrderCart
@@ -114,6 +120,19 @@ class Shipment(models.Model):
     parcel = models.OneToOneField(ParcelDescription, verbose_name=_("parcel"))
     label = models.FileField(upload_to=label_path, blank=True, null=True,
                              verbose_name=_("label"))
+
+    def __init__(self, *args, **kwargs):
+        if 'shipment' in kwargs:
+            shipment = kwargs.pop('shipment')
+            kwargs.update({
+                'id': shipment.id,
+                'status': shipment.status,
+                'tracking_pin': getattr(shipment, 'tracking_pin', None),
+                'return_tracking_pin': getattr(shipment, 'return_tracking_pin',
+                                               None),
+                })
+            self.shipment = shipment
+        super(Shipment, self).__init__(*args, **kwargs)
 
 @receiver(post_save, sender=Shipment)
 def create_links(sender, instance, created, **kwargs):
