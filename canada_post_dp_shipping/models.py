@@ -98,6 +98,15 @@ class Shipment(models.Model):
     label = models.FileField(upload_to=label_path, blank=True, null=True,
                              verbose_name=_("label"))
 
+@receiver(post_save, sender=Shipment)
+def create_links(sender, instance, created, **kwargs):
+    if created:
+        shipment  = getattr(instance, 'shipment', None)
+        if shipment:
+            for type, link in getattr(shipment, 'links', {}).items():
+                link = ShipmentLink(shipment=instance, type=type, data=link)
+                link.save()
+
 class ShipmentLink(models.Model):
     """
     Any of a number of links returned by Canada Post at CreateShipment time
@@ -127,14 +136,11 @@ def create_shipping_details(sender, instance, **kwargs):
 
     for service, parcel, packs in shipper.services:
         # these will be the same every time, but whatever
-        shipping_detail.link = service.link
         shipping_detail.code = service.code
 
         box = Box.objects.get(length=parcel.length, width=parcel.width,
                               height=parcel.height)
-        description = "[{}]".format(",".join("({})".format(unicode(p))
-                                                           for p in packs))
         parcel_description = ParcelDescription(
-            shipping_detail=shipping_detail, box=box, parcel=description)
+            shipping_detail=shipping_detail, box=box, packs=packs)
         parcel_description.save()
     shipping_detail.save()
