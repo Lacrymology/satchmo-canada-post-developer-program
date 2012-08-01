@@ -1,3 +1,4 @@
+from canada_post import PROD, DEV
 from canada_post.util.address import Origin, Destination
 
 def get_origin(shop_details):
@@ -17,3 +18,22 @@ def get_destination(contact):
                        city=contact.shipping_address.city,
                        province=contact.shipping_address.state)
 
+def canada_post_api_kwargs(settings):
+    cpa_kwargs = {
+        'customer_number': settings.CUSTOMER_NUMBER.value
+    }
+    if settings.LIVE.value:
+        cpa_kwargs.update({
+            'username': settings.USERNAME.value,
+            'password': settings.PASSWORD.value,
+            'dev': PROD,
+            })
+    else:
+        cpa_kwargs.update({
+            'username': settings.USERNAME_DEBUG.value,
+            'password': settings.PASSWORD_DEBUG.value,
+            'dev': DEV,
+            })
+    if settings.CONTRACT_SHIPPING.value:
+        cpa_kwargs['contract_number'] = settings.CONTRACT_NUMBER.value
+    return cpa_kwargs
