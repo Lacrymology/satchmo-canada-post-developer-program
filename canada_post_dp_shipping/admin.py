@@ -63,6 +63,20 @@ class DetailAdmin(admin.ModelAdmin):
         super(DetailAdmin, self).__init__(*args, **kwargs)
         self.settings = config_get_group('canada_post_dp_shipping')
 
+    def get_urls(self):
+        from django.conf.urls.defaults import url, patterns
+        info = "%s_%s" % (self.model._meta.app_label,
+                          self.model._meta.module_name)
+        pat = lambda regex, fn: url(regex, self.admin_site.admin_view(fn),
+                                    name='%s_%s' % (info, fn.__name__))
+        urlpatterns = patterns("",
+            pat(r'(?P<id>\d+)/create-shipments/$', self.create_shipments),
+            pat(r'(?P<id>\d+)/get-labels/$', self.get_labels),
+            pat(r'(?P<id>\d+)/void-shipments/$', self.void_shipments),
+            pat(r'(?P<id>\d+)/transmit-shipments/$', self.transmit_shipments),
+        )
+        return urlpatterns + super(DetailAdmin, self).get_urls()
+
 site.register(ShippingServiceDetail, DetailAdmin)
 
 class ShippingServiceDetailInline(admin.StackedInline):
