@@ -37,7 +37,7 @@ class Shipper(BaseShipper):
         self.settings = config_get_group('canada_post_dp_shipping')
         super(Shipper, self).__init__(cart=cart, contact=contact)
 
-    def __str__(self):
+    def __unicode__(self):
         """
         This is mainly helpful for debugging purposes
         """
