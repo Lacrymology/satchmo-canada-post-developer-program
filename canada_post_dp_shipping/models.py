@@ -145,7 +145,7 @@ class Shipment(models.Model):
         Canada Post API
         """
         # if this instance was created from a Shipment, we've got it saved.
-        if self.shipment:
+        if getattr(self, 'shipment', None):
             return self.shipment
         # else, we need to construct it
         kwargs = {
@@ -156,7 +156,7 @@ class Shipment(models.Model):
             'links': {}
         }
         for link in self.shipmentlink_set.all():
-            kwargs[link.type] = link.data
+            kwargs['links'][link.type] = link.data
         return CPAShipment(**kwargs)
 
     def __init__(self, *args, **kwargs):
