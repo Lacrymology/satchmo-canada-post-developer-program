@@ -109,7 +109,8 @@ class DetailAdmin(admin.ModelAdmin):
             self.message_user(request, _("{count} shipments created for order "
                                          "{order}").format(count=cnt,
                                                            order=detail.order))
-        return HttpResponseRedirect("..")
+        if id >= 0:
+            return HttpResponseRedirect("..")
     create_shipments.short_description = _("Create shipments on the Canada "
                                           "Post server for the selected orders")
 
@@ -157,12 +158,14 @@ class DetailAdmin(admin.ModelAdmin):
                                           "orders")
 
     def void_shipments(self, request, queryset=None, id=-1):
-        return HttpResponseRedirect("..")
+        if id >= 0:
+            return HttpResponseRedirect("..")
     void_shipments.short_description = _("Cancel created shipments for the "
                                          "selected orders")
 
     def transmit_shipments(self, request, queryset=None, id=-1):
-        return HttpResponseRedirect("..")
+        if id >= 0:
+            return HttpResponseRedirect("..")
     transmit_shipments.short_description = _("Transmit shipments for the "
                                              "selected orders")
 site.register(ShippingServiceDetail, DetailAdmin)
