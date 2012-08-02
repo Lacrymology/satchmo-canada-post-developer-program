@@ -122,6 +122,11 @@ class Shipment(models.Model):
     label = models.FileField(upload_to=label_path, blank=True, null=True,
                              verbose_name=_("label"))
 
+    def delete(self, *args, **kwargs):
+        if self.label:
+            self.label.delete()
+        super(Shipment, self).delete(*args, **kwargs)
+
     def download_label(self, username, password):
         link = self.shipmentlink_set.get(type='label')
         res = requests.get(link.data['href'], auth=(username, password))
