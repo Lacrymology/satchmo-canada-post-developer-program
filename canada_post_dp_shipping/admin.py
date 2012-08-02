@@ -158,6 +158,37 @@ class DetailAdmin(admin.ModelAdmin):
                                           "orders")
 
     def void_shipments(self, request, queryset=None, id=-1):
+        if queryset is None:
+            if queryset is None:
+                queryset = [get_object_or_404(ShippingServiceDetail,
+                                              id=id)]
+            else:
+                queryset = queryset.select_related()
+
+        cpa_kwargs = canada_post_api_kwargs(self.settings)
+        cpa = CanadaPostAPI(**cpa_kwargs)
+        errcnt = 0
+        gdcnt = 0
+        for detail in queryset:
+            for parcel in detail.parceldescription_set.all().select_related():
+                shipment = parcel.shipment
+                cpa_shipment = shipment.get_shipment()
+                if not cpa.void_shipment(cpa_shipment):
+                    errcnt += 1
+                    self.message_user(request, _("Could not void shipment "
+                                                 "{shipment_id} for order "
+                                                 "{order_id}").format(
+                        shipment_id=shipment.id, order_id=detail.order.id))
+                else:
+                    gdcnt += 1
+                    shipment.delete()
+
+        if not errcnt:
+            self.message_user(request, _("All shipments voided"))
+        else:
+            self.message_user(request, _("{good_count} shipments voided, {bad_count} "
+                                "problems").format(good_count=gdcnt,
+                                                   bad_count=errcnt))
         if id >= 0:
             return HttpResponseRedirect("..")
     void_shipments.short_description = _("Cancel created shipments for the "
