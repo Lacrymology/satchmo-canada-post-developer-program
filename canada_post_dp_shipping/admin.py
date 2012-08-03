@@ -1,10 +1,13 @@
+from canada_post_dp_shipping.forms import (ParcelDescriptionFormSet)
+from django.contrib.contenttypes.models import ContentType
 from django.core.files.base import File
+from django.core.urlresolvers import reverse
 import os
 import tempfile
 import zipfile
 from canada_post_dp_shipping.utils import (get_origin, get_destination,
                                            canada_post_api_kwargs)
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.admin.sites import site
 from django.contrib import admin
@@ -73,6 +76,7 @@ class OrderShippingAdmin(admin.ModelAdmin):
                                     name='%s_%s' % (info, fn.__name__))
         urlpatterns = patterns("",
             pat(r'(?P<id>\d+)/create-shipments/$', self.create_shipments),
+            pat(r'create-shipments-form/$', self.create_shipments_forms),
             pat(r'(?P<id>\d+)/get-labels/$', self.get_labels),
             pat(r'(?P<id>\d+)/void-shipments/$', self.void_shipments),
             pat(r'(?P<id>\d+)/transmit-shipments/$', self.transmit_shipments),
@@ -89,6 +93,14 @@ class OrderShippingAdmin(admin.ModelAdmin):
                                           id=id)]
         else:
             queryset = queryset.select_related()
+            # in this case, we want to redirect the user
+
+        url = "{}?{}".format(reverse('admin:canada_post_dp_shipping_'
+                                     'ordershippingservice_'
+                                     'create_shipments_forms'),
+                             "&".join("shipments=" + unicode(os.id)
+                                      for os in queryset))
+        return HttpResponseRedirect(url + '&shipments=3')
 
         shop_details = Config.objects.get_current()
         cpa_kwargs = canada_post_api_kwargs(self.settings)
@@ -111,8 +123,74 @@ class OrderShippingAdmin(admin.ModelAdmin):
                                                            order=detail.order))
         if id >= 0:
             return HttpResponseRedirect("..")
-    create_shipments.short_description = _("Create shipments on the Canada "
-                                          "Post server for the selected orders")
+    create_shipments.short_description = _("Create shipments on the "
+                                           "Canada Post server for the "
+                                           "selected orders")
+
+    def create_shipments_forms(self, request):
+        """
+        Process the forms for the creation of the shipments for a list of orders
+
+        Gets the list of ShippingServiceDetails to be processed as a GET query
+        param `shipments`
+        """
+        queryset = OrderShippingService.objects.filter(
+            id__in=request.REQUEST.getlist('shipments'))
+
+        shipping_service_forms = []
+        for order_shipping in queryset:
+            initial = []
+            for parcel in order_shipping.parceldescription_set.select_related():
+                initial.append({
+                    'length': parcel.box.length,
+                    'width': parcel.box.width,
+                    'height': parcel.box.height,
+                    'weight': parcel.weight,
+                    })
+
+            if request.method == "POST":
+                shipping_service_forms.append({
+                    'order_shipping': order_shipping,
+                    'forms': ParcelDescriptionFormSet(
+                        #initial=initial,
+                        prefix="parcels-for-{}".format(order_shipping.id),
+                        data=request.POST),
+                    })
+
+            else:
+                shipping_service_forms.append({
+                    'order_shipping': order_shipping,
+                    'forms': ParcelDescriptionFormSet(
+                        initial=initial,
+                        prefix="parcels-for-{}".format(order_shipping.id))
+                    })
+
+        if request.method == "POST":
+            if all(ssf['forms'].is_valid() for ssf in shipping_service_forms):
+                return HttpResponseRedirect("/admin/")
+
+        context = {
+            'shipping_service_forms': shipping_service_forms,
+            # context for django's change_form template
+            'app_label': self.model._meta.app_label,
+            'original': 'Create shipments',
+            'has_add_permission': True,
+            'has_change_permission': True,
+            'has_delete_permission': True,
+            'has_file_field': True, # FIXME - this should check if form or formsets have a FileField,
+            'has_absolute_url': hasattr(self.model, 'get_absolute_url'),
+            'opts': self.model._meta,
+            'content_type_id': ContentType.objects.get_for_model(self.model).id,
+            'save_as': self.save_as,
+            'save_on_top': self.save_on_top,
+            'root_path': self.admin_site.root_path,
+            'change': True,
+            'is_popup': "_popup" in request.REQUEST,
+            }
+        return render(request,
+                      "canada_post_dp_shipping/admin/create_shipments.html",
+                      context)
+
 
     def get_labels(self, request, queryset=None, id=-1):
         if queryset is None:
