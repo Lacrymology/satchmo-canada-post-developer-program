@@ -96,7 +96,7 @@ class OrderShippingAdmin(admin.ModelAdmin):
         origin = get_origin(shop_details)
         for detail in queryset:
             destination = get_destination(detail.order.contact)
-            group = unicode(detail.id)
+            group = unicode(detail.shipping_group())
             cnt = 0
             for parcel in detail.parceldescription_set.select_related().all():
                 shipment = cpa.create_shipment(parcel=parcel.get_parcel(),

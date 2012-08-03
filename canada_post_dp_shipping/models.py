@@ -64,6 +64,15 @@ class OrderShippingService(models.Model):
     def parcel_count(self):
         return self.parceldescription_set.count()
 
+    def shipping_group(self):
+        """
+        Returns a shipping group name to be passed to the Canada Post API.
+        alpha-numerical 32 char string
+        """
+        return "order_{order_id}__{this_id}".format(order_id=self.order.id,
+                                                    this_id=self.id)
+
+
     def __unicode__(self):
         return _("Shipping service detail for {order}").format(order=self.order)
 
