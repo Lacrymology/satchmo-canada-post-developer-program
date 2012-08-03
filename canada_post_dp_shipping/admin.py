@@ -167,7 +167,26 @@ class OrderShippingAdmin(admin.ModelAdmin):
 
         if request.method == "POST":
             if all(ssf['forms'].is_valid() for ssf in shipping_service_forms):
-                return HttpResponseRedirect("/admin/")
+                for ssf in shipping_service_forms:
+                    order_shipment = ssf['order_shipping']
+                    destination = get_destination(order_shipment.order.contact)
+                    group = unicode(order_shipment.shipping_group())
+                    cnt = 0
+                    
+                    for parcel in order_shipment.parceldescription_set.select_related().all():
+                        shipment = cpa.create_shipment(parcel=parcel.get_parcel(),
+                                                       origin=origin,
+                                                       destination=destination,
+                                                       service=order_shipment.get_service(),
+                                                       group=group)
+                        Shipment(shipment=shipment, parcel=parcel).save()
+                        cnt += 1
+                    self.message_user(request, _("{count} shipments created for order "
+                                                 "{order}").format(count=cnt,
+                                                                   order=order_shipment.order))
+                return HttpResponseRedirect(reverse(
+                    "admin:canada_post_dp_shipping_ordershippingservice_"
+                    "changelist"))
 
         context = {
             'shipping_service_forms': shipping_service_forms,
