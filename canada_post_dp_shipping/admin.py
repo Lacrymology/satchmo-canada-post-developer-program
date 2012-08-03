@@ -12,7 +12,7 @@ from django.http import (HttpResponseRedirect, HttpResponse)
 
 from canada_post import PROD, DEV
 from canada_post.api import CanadaPostAPI
-from canada_post_dp_shipping.models import (Box, ShippingServiceDetail,
+from canada_post_dp_shipping.models import (Box, OrderShippingService,
                                             ParcelDescription, ShipmentLink,
                                             Shipment)
 
@@ -48,7 +48,7 @@ class ParcelInline(admin.StackedInline):
     readonly_fields = ['parcel', 'box']
     extra = 0
 
-class DetailAdmin(admin.ModelAdmin):
+class OrderShippingAdmin(admin.ModelAdmin):
     """
     Admin for an order's detail
     """
@@ -62,7 +62,7 @@ class DetailAdmin(admin.ModelAdmin):
     actions_selection_counter = True
 
     def __init__(self, *args, **kwargs):
-        super(DetailAdmin, self).__init__(*args, **kwargs)
+        super(OrderShippingAdmin, self).__init__(*args, **kwargs)
         self.settings = config_get_group('canada_post_dp_shipping')
 
     def get_urls(self):
@@ -77,7 +77,7 @@ class DetailAdmin(admin.ModelAdmin):
             pat(r'(?P<id>\d+)/void-shipments/$', self.void_shipments),
             pat(r'(?P<id>\d+)/transmit-shipments/$', self.transmit_shipments),
         )
-        return urlpatterns + super(DetailAdmin, self).get_urls()
+        return urlpatterns + super(OrderShippingAdmin, self).get_urls()
 
     def get_parcels(self):
         pass
@@ -85,7 +85,7 @@ class DetailAdmin(admin.ModelAdmin):
     def create_shipments(self, request, queryset=None, id=-1):
         from satchmo_store.shop.models import Config
         if queryset is None:
-            queryset = [get_object_or_404(ShippingServiceDetail,
+            queryset = [get_object_or_404(OrderShippingService,
                                           id=id)]
         else:
             queryset = queryset.select_related()
@@ -116,7 +116,7 @@ class DetailAdmin(admin.ModelAdmin):
 
     def get_labels(self, request, queryset=None, id=-1):
         if queryset is None:
-            queryset = [get_object_or_404(ShippingServiceDetail,
+            queryset = [get_object_or_404(OrderShippingService,
                                           id=id)]
         else:
             queryset = queryset.select_related()
@@ -160,7 +160,7 @@ class DetailAdmin(admin.ModelAdmin):
     def void_shipments(self, request, queryset=None, id=-1):
         if queryset is None:
             if queryset is None:
-                queryset = [get_object_or_404(ShippingServiceDetail,
+                queryset = [get_object_or_404(OrderShippingService,
                                               id=id)]
             else:
                 queryset = queryset.select_related()
@@ -199,7 +199,7 @@ class DetailAdmin(admin.ModelAdmin):
             return HttpResponseRedirect("..")
     transmit_shipments.short_description = _("Transmit shipments for the "
                                              "selected orders")
-site.register(ShippingServiceDetail, DetailAdmin)
+site.register(OrderShippingService, OrderShippingAdmin)
 
 class ShippingServiceDetailInline(admin.StackedInline):
-    model = DetailAdmin
+    model = OrderShippingAdmin

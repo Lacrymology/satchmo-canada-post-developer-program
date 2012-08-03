@@ -50,7 +50,7 @@ class Box(models.Model):
     def volume(self):
         return self.length * self.width * self.height
 
-class ShippingServiceDetail(models.Model):
+class OrderShippingService(models.Model):
     """
     Save shipping details, such as link and product code
     """
@@ -68,7 +68,7 @@ class ShippingServiceDetail(models.Model):
         return _("Shipping service detail for {order}").format(order=self.order)
 
 class ParcelDescription(models.Model):
-    shipping_detail = models.ForeignKey(ShippingServiceDetail)
+    shipping_detail = models.ForeignKey(OrderShippingService)
     box = models.ForeignKey(Box)
     parcel = models.CharField(max_length=256,
                               verbose_name=_("parcel description"),
@@ -205,7 +205,7 @@ def create_shipping_details(sender, instance, **kwargs):
     from shipping.config import shipping_method_by_key
     order = instance
     # we don't want more than one of these, so we overwrite
-    shipping_detail, new = ShippingServiceDetail.objects.get_or_create(
+    shipping_detail, new = OrderShippingService.objects.get_or_create(
         order=order)
     if new:
         shipping_detail.save()
