@@ -104,7 +104,9 @@ class Shipper(BaseShipper):
         error_ret = False, None, None
         shop_details = Config.objects.get_current()
 
-        cpa_kwargs = canada_post_api_kwargs(self.settings)
+        # always use production api keys for get_rates, you don't get charged
+        #  anyways
+        cpa_kwargs = canada_post_api_kwargs(self.settings, production=True)
 
         cpa = CanadaPostAPI(**cpa_kwargs)
 

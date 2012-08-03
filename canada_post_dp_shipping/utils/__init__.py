@@ -18,11 +18,14 @@ def get_destination(contact):
                        city=contact.shipping_address.city,
                        province=contact.shipping_address.state)
 
-def canada_post_api_kwargs(settings):
+def canada_post_api_kwargs(settings, production=None):
     cpa_kwargs = {
         'customer_number': settings.CUSTOMER_NUMBER.value
     }
-    if settings.LIVE.value:
+    if production is None:
+        production = settings.LIVE.value
+
+    if production:
         cpa_kwargs.update({
             'username': settings.USERNAME.value,
             'password': settings.PASSWORD.value,
