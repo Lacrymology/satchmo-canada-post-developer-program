@@ -139,7 +139,8 @@ class Shipment(models.Model):
 
     id = models.CharField(max_length=32, primary_key=True, editable=False)
     tracking_pin = models.BigIntegerField(blank=True, default="")
-    return_tracking_pin = models.BigIntegerField(blank=True, null=True, default="")
+    return_tracking_pin = models.BigIntegerField(blank=True, null=True,
+                                                 default="")
     status = models.CharField(max_length=14)
     parcel = models.OneToOneField(ParcelDescription, verbose_name=_("parcel"))
     label = models.FileField(upload_to=label_path, blank=True, null=True,
