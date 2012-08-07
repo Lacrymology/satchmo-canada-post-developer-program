@@ -1,0 +1,9 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+{% load url from future %}
+{% block object-tools-items %}
+    {{ block.super }}
+    {% if original.ordershippingservice %}
+    <li><a href="{% url 'admin:canada_post_dp_shipping_ordershippingservice_change' original.ordershippingservice.id %}">{% trans "See shipping details for this order" %}</a></li>
+    {% endif %}
+{% endblock %}
