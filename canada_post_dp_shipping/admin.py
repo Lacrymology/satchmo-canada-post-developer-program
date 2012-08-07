@@ -100,7 +100,7 @@ class OrderShippingAdmin(admin.ModelAdmin):
                                      'create_shipments_forms'),
                              "&".join("shipments=" + unicode(os.id)
                                       for os in queryset))
-        return HttpResponseRedirect(url + '&shipments=3')
+        return HttpResponseRedirect(url)
 
         shop_details = Config.objects.get_current()
         cpa_kwargs = canada_post_api_kwargs(self.settings)
