@@ -1,0 +1,3 @@
+recursive-include canada_post_dp_shipping/templates *
+recursive-include canada_post_dp_shipping/locale *
+recursive-include canada_post_dp_shipping/static *
