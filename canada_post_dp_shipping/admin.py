@@ -1,7 +1,4 @@
-from canada_post_dp_shipping.forms import (ParcelDescriptionFormSet)
-from django.contrib.contenttypes.models import ContentType
 from django.core.files.base import File
-from django.core.urlresolvers import reverse
 import os
 import tempfile
 import zipfile
@@ -10,10 +7,9 @@ from canada_post_dp_shipping.utils import (get_origin, get_destination,
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.admin.sites import site
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.http import (HttpResponseRedirect, HttpResponse)
 
-from canada_post import PROD, DEV
 from canada_post.api import CanadaPostAPI
 from canada_post_dp_shipping.models import (Box, OrderShippingService,
                                             ParcelDescription, ShipmentLink,
