@@ -72,6 +72,21 @@ class OrderShippingService(models.Model):
         return "order_{order_id}__{this_id}".format(order_id=self.order.id,
                                                     this_id=self.id)
 
+    def shipments_created(self):
+        try:
+            return all(bool(parcel.shipment)
+                for parcel in self.parceldescription_set.all())
+        except Shipment.DoesNotExist:
+            return False
+    shipments_created.boolean = True
+
+    def has_labels(self):
+        try:
+            return all(bool(parcel.shipment.label)
+                for parcel in self.parceldescription_set.all())
+        except Shipment.DoesNotExist:
+            return False
+    has_labels.boolean = True
 
     def __unicode__(self):
         return _("Shipping service detail for {order}").format(order=self.order)
