@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-07-06 19:51-0300\n"
+"POT-Creation-Date: 2012-08-07 11:20-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,52 +17,265 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: config.py:12
+#: admin.py:94
+msgid "Please confirm the parcels size and weight"
+msgstr ""
+
+#: admin.py:125 admin.py:188
+msgid "{count} shipments created for order {order}"
+msgstr ""
+
+#: admin.py:130
+msgid "Create shipments on the Canada Post server for the selected orders"
+msgstr ""
+
+#: admin.py:236
+msgid ""
+"Failed downloading label for shipment {id} because the Canada Post server is "
+"busy, please wait a couple of minutes and try again"
+msgstr ""
+
+#: admin.py:258
+msgid "Get label links for the selected orders"
+msgstr ""
+
+#: admin.py:279
+msgid "Could not void shipment {shipment_id} for order {order_id}"
+msgstr ""
+
+#: admin.py:288
+msgid "All shipments voided"
+msgstr ""
+
+#: admin.py:290
+msgid "{good_count} shipments voided, {bad_count} problems"
+msgstr ""
+
+#: admin.py:295
+msgid "Cancel created shipments for the selected orders"
+msgstr ""
+
+#: admin.py:301
+msgid "Transmit shipments for the selected orders"
+msgstr ""
+
+#: config.py:13
 msgid "Canada Post Shipping Dev Prog Settings"
 msgstr ""
 
 #: config.py:21
-msgid "Canada Post Customer Number"
+msgid "Contract Shipping"
 msgstr ""
 
 #: config.py:22
-msgid "The Customer Number assigned by Canada PostDeveloper Program"
+msgid "Use Contract Shipping method"
 msgstr ""
 
-#: config.py:28
-msgid "Canada Post shipping choices available to customers."
-msgstr ""
-
-#: config.py:57
+#: config.py:29
 msgid "Access production Canada Post server"
 msgstr ""
 
-#: config.py:58
-msgid "Use this when your store is in production."
+#: config.py:30
+msgid ""
+"Use this when your store is in production. NOTE: the values you'll see when "
+"in development mode will NOT reflect the real packaging. This is a Canada "
+"Post limitation"
 msgstr ""
 
-#: config.py:63
+#: config.py:38
+msgid "Canada Post Customer Number"
+msgstr ""
+
+#: config.py:39
+msgid "The Customer Number assigned by Canada PostDeveloper Program"
+msgstr ""
+
+#: config.py:45
+msgid "Canada Post Username"
+msgstr ""
+
+#: config.py:46
+msgid ""
+"The Canada Post username part of the production API production Key Number"
+msgstr ""
+
+#: config.py:52
+msgid "Canada Post Username (Debug)"
+msgstr ""
+
+#: config.py:53
+msgid "The Canada Post username part of the development API Key Number"
+msgstr ""
+
+#: config.py:59
+msgid "Canada Post Password"
+msgstr ""
+
+#: config.py:60
+msgid "The Canada Post password part of the production API Key Number"
+msgstr ""
+
+#: config.py:66
+msgid "Canada Post Password (Debug)"
+msgstr ""
+
+#: config.py:67
+msgid "The Canada Post password part of the development API Key Number"
+msgstr ""
+
+#: config.py:75
+msgid "Contract Number"
+msgstr ""
+
+#: config.py:76
+msgid "The contract number with Canada Post. Required for Contract Shipment"
+msgstr ""
+
+#: config.py:83
+msgid "Canada Post shipping choices available to customers."
+msgstr ""
+
+#: config.py:112
 msgid "Verbose logs"
 msgstr ""
 
-#: config.py:64
+#: config.py:113
 msgid ""
 "Send the entire request and response to the log - for debugging help when "
 "setting up Canada Post."
 msgstr ""
 
-#: shipper.py:40
+#: models.py:24
+msgid "description"
+msgstr ""
+
+#: models.py:25
+msgid "Box name"
+msgstr ""
+
+#: models.py:26
+msgid "length"
+msgstr ""
+
+#: models.py:28
+msgid "Longest dimension in cm"
+msgstr ""
+
+#: models.py:29 models.py:32
+msgid "width"
+msgstr ""
+
+#: models.py:31
+msgid "Second longest dimension in cm"
+msgstr ""
+
+#: models.py:34
+msgid "Shortest dimension in cm"
+msgstr ""
+
+#: models.py:41
+msgid "box"
+msgstr ""
+
+#: models.py:42
+msgid "boxes"
+msgstr ""
+
+#: models.py:57
+msgid "order"
+msgstr ""
+
+#: models.py:58
+msgid "code"
+msgstr ""
+
+#: models.py:59
+msgid "Internal Canada Post product code"
+msgstr ""
+
+#: models.py:77
+msgid "Shipping service detail for {order}"
+msgstr ""
+
+#: models.py:83
+msgid "parcel description"
+msgstr ""
+
+#: models.py:84
+msgid "List of packages that go inside this parcel"
+msgstr ""
+
+#: models.py:88
+msgid "weight"
+msgstr ""
+
+#: models.py:89
+msgid "Total weight of the parcel, in kilograms"
+msgstr ""
+
+#: models.py:130
+msgid "parcel"
+msgstr ""
+
+#: models.py:132
+msgid "label"
+msgstr ""
+
+#: shipper.py:53
 msgid "Canada Post - {service_type}"
 msgstr ""
 
-#: shipper.py:54
-msgid "Canada Post"
+#: shipper.py:68
+msgid "Canada Post Developer Program"
 msgstr ""
 
-#: shipper.py:61
+#: shipper.py:75
 msgid "{days} business days"
 msgstr ""
 
-#: shipper.py:63
+#: shipper.py:77
 msgid "Unknown"
+msgstr ""
+
+#: templates/admin/canada_post_dp_shipping/ordershippingservice/change_form.html:6
+msgid "Create Shipments on Canada Post for this"
+msgstr ""
+
+#: templates/canada_post_dp_shipping/admin/confirm_shipments.html:7
+msgid "Home"
+msgstr ""
+
+#: templates/canada_post_dp_shipping/admin/confirm_shipments.html:11
+msgid "Create Shipments"
+msgstr ""
+
+#: templates/canada_post_dp_shipping/admin/confirm_shipments.html:16
+#, python-format
+msgid ""
+"Please confirm the shipment parcels for Order %(object.order)s. Are these "
+"parcels correct?"
+msgstr ""
+
+#: templates/canada_post_dp_shipping/admin/confirm_shipments.html:20
+#, python-format
+msgid ""
+"\n"
+"                Parcel #%(forloop.counter)s:\n"
+"                <ul>\n"
+"                    <li>Box: %(parcel.box)s</li>\n"
+"                    <li>Weight: %(parcel.weight)s</li>\n"
+"                </ul>\n"
+"            "
+msgstr ""
+
+#: templates/canada_post_dp_shipping/admin/confirm_shipments.html:33
+msgid "Yes, I'm sure"
+msgstr ""
+
+#: templates/canada_post_dp_shipping/admin/create_shipments.html:91
+msgid "Add another parcel"
+msgstr ""
+
+#: templates/canada_post_dp_shipping/admin/create_shipments.html:94
+msgid "Remove"
 msgstr ""
