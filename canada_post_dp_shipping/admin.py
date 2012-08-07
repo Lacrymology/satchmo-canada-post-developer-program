@@ -54,8 +54,11 @@ class OrderShippingAdmin(admin.ModelAdmin):
     inlines = [ParcelInline]
     readonly_fields = ['order']
     list_display = ['__unicode__', 'order', 'code', 'parcel_count']
-    actions = ['void_shipments', 'create_shipments', 'get_labels',
-               'transmit_shipments']
+    actions = [
+        'void_shipments',
+        'get_labels',
+        #'transmit_shipments', # comment out for now
+               ]
     actions_on_bottom = True
     actions_selection_counter = True
 
