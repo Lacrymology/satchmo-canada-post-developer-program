@@ -54,7 +54,7 @@ class OrderShippingService(models.Model):
     """
     Save shipping details, such as link and product code
     """
-    order = models.ForeignKey(Order, verbose_name=_("order"), editable=False)
+    order = models.OneToOneField(Order, verbose_name=_("order"), editable=False)
     code = models.CharField(max_length=16, verbose_name=_("code"),
                             help_text=_("Internal Canada Post product code"))
 

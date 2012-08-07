@@ -3,5 +3,5 @@
 {% load url from future %}
 {% block object-tools-items %}
     {{ block.super }}
-    <li><a href="{% url 'admin:canada_post_dp_shipping_ordershippingservice_create_shipments' object_id %}" class="historylink">{% trans "Create Shipments on Canada Post for this" %}</a></li>
+    <li><a href="{% url 'admin:canada_post_dp_shipping_ordershippingservice_create_shipments' object_id %}">{% trans "Create Shipments on Canada Post for this" %}</a></li>
 {% endblock %}

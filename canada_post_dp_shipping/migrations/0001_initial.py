@@ -15,33 +15,70 @@ class Migration(SchemaMigration):
             ('length', self.gf('django.db.models.fields.DecimalField')(max_digits=4, decimal_places=1)),
             ('width', self.gf('django.db.models.fields.DecimalField')(max_digits=4, decimal_places=1)),
             ('height', self.gf('django.db.models.fields.DecimalField')(max_digits=4, decimal_places=1)),
-            ('max_weight', self.gf('django.db.models.fields.DecimalField')(max_digits=5, decimal_places=3)),
         ))
         db.send_create_signal('canada_post_dp_shipping', ['Box'])
 
-        # Adding unique constraint on 'Box', fields ['length', 'width', 'height', 'max_weight']
-        db.create_unique('canada_post_dp_shipping_box', ['length', 'width', 'height', 'max_weight'])
+        # Adding unique constraint on 'Box', fields ['length', 'width', 'height']
+        db.create_unique('canada_post_dp_shipping_box', ['length', 'width', 'height'])
 
-        # Adding model 'ShippingDetail'
-        db.create_table('canada_post_dp_shipping_shippingdetail', (
+        # Adding model 'OrderShippingService'
+        db.create_table('canada_post_dp_shipping_ordershippingservice', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('order', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['shop.Order'])),
-            ('link', self.gf('django.db.models.fields.CharField')(max_length=128)),
+            ('order', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['shop.Order'], unique=True)),
             ('code', self.gf('django.db.models.fields.CharField')(max_length=16)),
         ))
-        db.send_create_signal('canada_post_dp_shipping', ['ShippingDetail'])
+        db.send_create_signal('canada_post_dp_shipping', ['OrderShippingService'])
+
+        # Adding model 'ParcelDescription'
+        db.create_table('canada_post_dp_shipping_parceldescription', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('shipping_detail', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['canada_post_dp_shipping.OrderShippingService'])),
+            ('box', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['canada_post_dp_shipping.Box'])),
+            ('parcel', self.gf('django.db.models.fields.CharField')(max_length=256)),
+            ('weight', self.gf('django.db.models.fields.DecimalField')(max_digits=5, decimal_places=3)),
+        ))
+        db.send_create_signal('canada_post_dp_shipping', ['ParcelDescription'])
+
+        # Adding model 'Shipment'
+        db.create_table('canada_post_dp_shipping_shipment', (
+            ('id', self.gf('django.db.models.fields.CharField')(max_length=32, primary_key=True)),
+            ('tracking_pin', self.gf('django.db.models.fields.BigIntegerField')(default='', blank=True)),
+            ('return_tracking_pin', self.gf('django.db.models.fields.BigIntegerField')(default='', null=True, blank=True)),
+            ('status', self.gf('django.db.models.fields.CharField')(max_length=14)),
+            ('parcel', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['canada_post_dp_shipping.ParcelDescription'], unique=True)),
+            ('label', self.gf('django.db.models.fields.files.FileField')(max_length=100, null=True, blank=True)),
+        ))
+        db.send_create_signal('canada_post_dp_shipping', ['Shipment'])
+
+        # Adding model 'ShipmentLink'
+        db.create_table('canada_post_dp_shipping_shipmentlink', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('shipment', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['canada_post_dp_shipping.Shipment'])),
+            ('type', self.gf('django.db.models.fields.CharField')(max_length=16)),
+            ('data', self.gf('jsonfield.fields.JSONField')(blank=True)),
+        ))
+        db.send_create_signal('canada_post_dp_shipping', ['ShipmentLink'])
 
 
     def backwards(self, orm):
         
-        # Removing unique constraint on 'Box', fields ['length', 'width', 'height', 'max_weight']
-        db.delete_unique('canada_post_dp_shipping_box', ['length', 'width', 'height', 'max_weight'])
+        # Removing unique constraint on 'Box', fields ['length', 'width', 'height']
+        db.delete_unique('canada_post_dp_shipping_box', ['length', 'width', 'height'])
 
         # Deleting model 'Box'
         db.delete_table('canada_post_dp_shipping_box')
 
-        # Deleting model 'ShippingDetail'
-        db.delete_table('canada_post_dp_shipping_shippingdetail')
+        # Deleting model 'OrderShippingService'
+        db.delete_table('canada_post_dp_shipping_ordershippingservice')
+
+        # Deleting model 'ParcelDescription'
+        db.delete_table('canada_post_dp_shipping_parceldescription')
+
+        # Deleting model 'Shipment'
+        db.delete_table('canada_post_dp_shipping_shipment')
+
+        # Deleting model 'ShipmentLink'
+        db.delete_table('canada_post_dp_shipping_shipmentlink')
 
 
     models = {
@@ -75,20 +112,42 @@ class Migration(SchemaMigration):
             'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'})
         },
         'canada_post_dp_shipping.box': {
-            'Meta': {'ordering': "['-length', '-width', '-height', '-max_weight']", 'unique_together': "(('length', 'width', 'height', 'max_weight'),)", 'object_name': 'Box'},
+            'Meta': {'ordering': "['-length', '-width', '-height']", 'unique_together': "(('length', 'width', 'height'),)", 'object_name': 'Box'},
             'description': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '64'}),
             'height': ('django.db.models.fields.DecimalField', [], {'max_digits': '4', 'decimal_places': '1'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'length': ('django.db.models.fields.DecimalField', [], {'max_digits': '4', 'decimal_places': '1'}),
-            'max_weight': ('django.db.models.fields.DecimalField', [], {'max_digits': '5', 'decimal_places': '3'}),
             'width': ('django.db.models.fields.DecimalField', [], {'max_digits': '4', 'decimal_places': '1'})
         },
-        'canada_post_dp_shipping.shippingdetail': {
-            'Meta': {'object_name': 'ShippingDetail'},
+        'canada_post_dp_shipping.ordershippingservice': {
+            'Meta': {'object_name': 'OrderShippingService'},
             'code': ('django.db.models.fields.CharField', [], {'max_length': '16'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'link': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
-            'order': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['shop.Order']"})
+            'order': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['shop.Order']", 'unique': 'True'})
+        },
+        'canada_post_dp_shipping.parceldescription': {
+            'Meta': {'object_name': 'ParcelDescription'},
+            'box': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['canada_post_dp_shipping.Box']"}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'parcel': ('django.db.models.fields.CharField', [], {'max_length': '256'}),
+            'shipping_detail': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['canada_post_dp_shipping.OrderShippingService']"}),
+            'weight': ('django.db.models.fields.DecimalField', [], {'max_digits': '5', 'decimal_places': '3'})
+        },
+        'canada_post_dp_shipping.shipment': {
+            'Meta': {'object_name': 'Shipment'},
+            'id': ('django.db.models.fields.CharField', [], {'max_length': '32', 'primary_key': 'True'}),
+            'label': ('django.db.models.fields.files.FileField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'parcel': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['canada_post_dp_shipping.ParcelDescription']", 'unique': 'True'}),
+            'return_tracking_pin': ('django.db.models.fields.BigIntegerField', [], {'default': "''", 'null': 'True', 'blank': 'True'}),
+            'status': ('django.db.models.fields.CharField', [], {'max_length': '14'}),
+            'tracking_pin': ('django.db.models.fields.BigIntegerField', [], {'default': "''", 'blank': 'True'})
+        },
+        'canada_post_dp_shipping.shipmentlink': {
+            'Meta': {'object_name': 'ShipmentLink'},
+            'data': ('jsonfield.fields.JSONField', [], {'blank': 'True'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'shipment': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['canada_post_dp_shipping.Shipment']"}),
+            'type': ('django.db.models.fields.CharField', [], {'max_length': '16'})
         },
         'contact.contact': {
             'Meta': {'object_name': 'Contact'},
