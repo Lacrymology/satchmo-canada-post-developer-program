@@ -4,13 +4,12 @@ import tempfile
 import zipfile
 from canada_post_dp_shipping.utils import (get_origin, get_destination,
                                            canada_post_api_kwargs)
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.admin.sites import site
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.http import (HttpResponseRedirect, HttpResponse)
 
-from canada_post import PROD, DEV
 from canada_post.api import CanadaPostAPI
 from canada_post_dp_shipping.models import (Box, OrderShippingService,
                                             ParcelDescription, ShipmentLink,
@@ -45,7 +44,6 @@ site.register(ParcelDescription, ParcelAdmin)
 
 class ParcelInline(admin.StackedInline):
     model = ParcelDescription
-    readonly_fields = ['parcel', 'box']
     extra = 0
 
 class OrderShippingAdmin(admin.ModelAdmin):
@@ -55,9 +53,13 @@ class OrderShippingAdmin(admin.ModelAdmin):
     fields = ['order', 'code']
     inlines = [ParcelInline]
     readonly_fields = ['order']
-    list_display = ['__unicode__', 'order', 'code', 'parcel_count']
-    actions = ['void_shipments', 'create_shipments', 'get_labels',
-               'transmit_shipments']
+    list_display = ['__unicode__', 'order', 'code', 'parcel_count',
+                    'shipments_created', 'has_labels']
+    actions = [
+        'void_shipments',
+        'get_labels',
+        #'transmit_shipments', # comment out for now
+               ]
     actions_on_bottom = True
     actions_selection_counter = True
 
@@ -82,37 +84,64 @@ class OrderShippingAdmin(admin.ModelAdmin):
     def get_parcels(self):
         pass
 
-    def create_shipments(self, request, queryset=None, id=-1):
+    def create_shipments(self, request, id):
         from satchmo_store.shop.models import Config
-        if queryset is None:
-            queryset = [get_object_or_404(OrderShippingService,
-                                          id=id)]
-        else:
-            queryset = queryset.select_related()
+        order_shipping = get_object_or_404(OrderShippingService, id=id)
 
-        shop_details = Config.objects.get_current()
-        cpa_kwargs = canada_post_api_kwargs(self.settings)
-        cpa = CanadaPostAPI(**cpa_kwargs)
-        origin = get_origin(shop_details)
-        for detail in queryset:
-            destination = get_destination(detail.order.contact)
-            group = unicode(detail.shipping_group())
+        if request.method == 'GET':
+            opts = self.model._meta
+            title = _("Please confirm the parcels size and weight")
+            object_name = unicode(opts.verbose_name)
+            app_label = opts.app_label
+            context = {
+                "title": title,
+                "object_name": object_name,
+                "object": order_shipping,
+                "opts": opts,
+                "root_path": self.admin_site.root_path,
+                "app_label": app_label,
+                }
+            return render(request,
+                          ("canada_post_dp_shipping/admin/"
+                           "confirm_shipments.html"),
+                          context)
+        elif request.REQUEST.get('post', None) == "yes":
+            # else method is POST
+            shop_details = Config.objects.get_current()
+            cpa_kwargs = canada_post_api_kwargs(self.settings)
+            cpa = CanadaPostAPI(**cpa_kwargs)
+            origin = get_origin(shop_details)
+
+            destination = get_destination(order_shipping.order.contact)
+            group = unicode(order_shipping.shipping_group())
             cnt = 0
-            for parcel in detail.parceldescription_set.select_related().all():
-                shipment = cpa.create_shipment(parcel=parcel.get_parcel(),
-                                               origin=origin,
-                                               destination=destination,
-                                               service=detail.get_service(),
-                                               group=group)
-                Shipment(shipment=shipment, parcel=parcel).save()
-                cnt += 1
+            exs = 0
+            for parcel in (order_shipping.parceldescription_set
+                           .select_related().all()):
+                try:
+                    if parcel.shipment:
+                        exs += 1
+                except Shipment.DoesNotExist:
+                    shipment = cpa.create_shipment(
+                        parcel=parcel.get_parcel(), origin=origin,
+                        destination=destination,
+                        service=order_shipping.get_service(), group=group)
+                    Shipment(shipment=shipment, parcel=parcel).save()
+                    cnt += 1
             self.message_user(request, _("{count} shipments created for order "
-                                         "{order}").format(count=cnt,
-                                                           order=detail.order))
-        if id >= 0:
-            return HttpResponseRedirect("..")
-    create_shipments.short_description = _("Create shipments on the Canada "
-                                          "Post server for the selected orders")
+                                         "{order}").format(
+                count=cnt, order=order_shipping.order))
+            if exs > 0:
+                messages.warning(request, _("{count} shipments already existed "
+                                             "for {order}").format(
+                    count=exs, order=order_shipping.order))
+        else:
+            messages.error(request, _("Unexpected error, please retry"))
+        return HttpResponseRedirect("..")
+    create_shipments.short_description = _("Create shipments on the "
+                                           "Canada Post server for the "
+                                           "selected orders")
+
 
     def get_labels(self, request, queryset=None, id=-1):
         if queryset is None:
@@ -130,7 +159,8 @@ class OrderShippingAdmin(admin.ModelAdmin):
                 shipment = parcel.shipment
                 if not shipment.label:
                     try:
-                        shipment.download_label(args['username'], args['password'])
+                        shipment.download_label(args['username'],
+                                                args['password'])
                     except Shipment.Wait:
                         self.message_user(_("Failed downloading label for "
                                             "shipment {id} because the "
@@ -169,26 +199,33 @@ class OrderShippingAdmin(admin.ModelAdmin):
         cpa = CanadaPostAPI(**cpa_kwargs)
         errcnt = 0
         gdcnt = 0
+        dne = 0
         for detail in queryset:
             for parcel in detail.parceldescription_set.all().select_related():
-                shipment = parcel.shipment
-                cpa_shipment = shipment.get_shipment()
-                if not cpa.void_shipment(cpa_shipment):
-                    errcnt += 1
-                    self.message_user(request, _("Could not void shipment "
-                                                 "{shipment_id} for order "
-                                                 "{order_id}").format(
-                        shipment_id=shipment.id, order_id=detail.order.id))
-                else:
-                    gdcnt += 1
-                    shipment.delete()
+                try:
+                    shipment = parcel.shipment
+                    cpa_shipment = shipment.get_shipment()
+                    if not cpa.void_shipment(cpa_shipment):
+                        errcnt += 1
+                        self.message_user(request, _("Could not void shipment "
+                                                     "{shipment_id} for order "
+                                                     "{order_id}").format(
+                            shipment_id=shipment.id, order_id=detail.order.id))
+                    else:
+                        gdcnt += 1
+                        shipment.delete()
+                except Shipment.DoesNotExist:
+                    dne += 1
 
         if not errcnt:
             self.message_user(request, _("All shipments voided"))
         else:
-            self.message_user(request, _("{good_count} shipments voided, {bad_count} "
-                                "problems").format(good_count=gdcnt,
-                                                   bad_count=errcnt))
+            messages.warning(request, _("{good_count} shipments voided, "
+                                        "{bad_count} problems").format(
+                good_count=gdcnt, bad_count=errcnt))
+        if dne:
+            self.message_user(request, _("{count} shipments didn't "
+                                         "exist").format(count=dne))
         if id >= 0:
             return HttpResponseRedirect("..")
     void_shipments.short_description = _("Cancel created shipments for the "

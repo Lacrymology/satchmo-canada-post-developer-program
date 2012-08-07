@@ -1,0 +1,36 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+{% load url from future %}
+
+{% block breadcrumbs %}
+    <div class="breadcrumbs">
+        <a href="{% url 'admin:index' %}">{% trans "Home" %}</a> &rsaquo;
+        <a href="{% url 'admin:app_list' app_label %}">{{ app_label|capfirst }}</a> &rsaquo;
+        <a href="{% url 'admin:canada_post_dp_shipping_ordershippingservice_changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a> &rsaquo;
+        <a href="../">{{ object|truncatewords:"18" }}</a> &rsaquo;
+        {% trans 'Create Shipments' %}
+    </div>
+{% endblock %}
+
+{% block content %}
+    <p>{% blocktrans with object.order as order %}Please confirm the shipment parcels for {{ order }}. Are you sure these parcels correct?{% endblocktrans %}</p>
+    <ul>
+    {% for parcel in object.parceldescription_set.all %}
+        <li>
+            {% blocktrans with box=parcel.box counter=forloop.counter weight=parcel.weight %}
+                Parcel #{{ counter }}:
+                <ul>
+                    <li>Box: {{ box }}</li>
+                    <li>Total weight: {{ weight }}kg</li>
+                </ul>
+            {% endblocktrans %}
+        </li>
+    {% endfor %}
+    </ul>
+    <form action="" method="post">{% csrf_token %}
+        <div>
+            <input type="hidden" name="post" value="yes" />
+            <input type="submit" value="{% trans "Yes, I'm sure" %}" />
+        </div>
+    </form>
+{% endblock %}

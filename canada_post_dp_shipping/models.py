@@ -72,6 +72,21 @@ class OrderShippingService(models.Model):
         return "order_{order_id}__{this_id}".format(order_id=self.order.id,
                                                     this_id=self.id)
 
+    def shipments_created(self):
+        try:
+            return all(bool(parcel.shipment)
+                for parcel in self.parceldescription_set.all())
+        except Shipment.DoesNotExist:
+            return False
+    shipments_created.boolean = True
+
+    def has_labels(self):
+        try:
+            return all(bool(parcel.shipment.label)
+                for parcel in self.parceldescription_set.all())
+        except Shipment.DoesNotExist:
+            return False
+    has_labels.boolean = True
 
     def __unicode__(self):
         return _("Shipping service detail for {order}").format(order=self.order)
@@ -82,8 +97,7 @@ class ParcelDescription(models.Model):
     parcel = models.CharField(max_length=256,
                               verbose_name=_("parcel description"),
                               help_text=_("List of packages that go inside "
-                                          "this parcel"),
-                              editable=False,)
+                                          "this parcel"),)
     weight = models.DecimalField(max_digits=5, decimal_places=3,
                                  verbose_name=_("weight"),
                                  help_text=_("Total weight of the parcel, "
@@ -125,7 +139,8 @@ class Shipment(models.Model):
 
     id = models.CharField(max_length=32, primary_key=True, editable=False)
     tracking_pin = models.BigIntegerField(blank=True, default="")
-    return_tracking_pin = models.BigIntegerField(blank=True, null=True, default="")
+    return_tracking_pin = models.BigIntegerField(blank=True, null=True,
+                                                 default="")
     status = models.CharField(max_length=14)
     parcel = models.OneToOneField(ParcelDescription, verbose_name=_("parcel"))
     label = models.FileField(upload_to=label_path, blank=True, null=True,
@@ -185,6 +200,10 @@ class Shipment(models.Model):
                 })
             self.shipment = shipment
         super(Shipment, self).__init__(*args, **kwargs)
+
+    def __unicode__(self):
+        return "Shipment {} for {}".format(
+            self.id, self.parcel.shipping_detail.order)
 
     class Wait(Exception):
         pass
