@@ -44,7 +44,6 @@ site.register(ParcelDescription, ParcelAdmin)
 
 class ParcelInline(admin.StackedInline):
     model = ParcelDescription
-    readonly_fields = ['parcel', 'box']
     extra = 0
 
 class OrderShippingAdmin(admin.ModelAdmin):
