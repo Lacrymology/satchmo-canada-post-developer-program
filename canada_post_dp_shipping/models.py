@@ -97,8 +97,7 @@ class ParcelDescription(models.Model):
     parcel = models.CharField(max_length=256,
                               verbose_name=_("parcel description"),
                               help_text=_("List of packages that go inside "
-                                          "this parcel"),
-                              editable=False,)
+                                          "this parcel"),)
     weight = models.DecimalField(max_digits=5, decimal_places=3,
                                  verbose_name=_("weight"),
                                  help_text=_("Total weight of the parcel, "
