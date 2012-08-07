@@ -201,6 +201,10 @@ class Shipment(models.Model):
             self.shipment = shipment
         super(Shipment, self).__init__(*args, **kwargs)
 
+    def __unicode__(self):
+        return "Shipment {} for {}".format(
+            self.id, self.parcel.shipping_detail.order)
+
     class Wait(Exception):
         pass
 
