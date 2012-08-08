@@ -1,17 +1,39 @@
+from canada_post_dp_shipping.models import ParcelDescription, Shipment
 from django import forms
-from django.forms.formsets import formset_factory
 
-class ParcelDescriptionForm(forms.Form):
+class ParcelDescriptionForm(forms.ModelForm):
     """
     Form for the creation of parcels/shipments. A ModelForm is not used because
     I need to separate the box dimensions from the Box model
     """
-    class Media:
-        js = ['admin/js/jquery.min.js', 'admin/js/jquery.init.js', 'admin/js/inlines.js']
+    shipment_id = forms.CharField(max_length=32, required=False)
+    shipment_status = forms.CharField(max_length=14, required=False)
+    shipment_label = forms.FileField(required=False)
 
-    length = forms.DecimalField(max_digits=4, decimal_places=1)
-    width = forms.DecimalField(max_digits=4, decimal_places=1)
-    height = forms.DecimalField(max_digits=4, decimal_places=1)
-    weight = forms.DecimalField(max_digits=5, decimal_places=3)
+    class Meta:
+        model = ParcelDescription
 
-ParcelDescriptionFormSet = formset_factory(form=ParcelDescriptionForm)
+    def __init__(self, instance=None, *args, **kwargs):
+        shipment_defaults = {}
+        if instance:
+            try:
+                shipment = instance.shipment
+                shipment_defaults.update({
+                    'shipment_id': shipment.id,
+                    'shipment_status': shipment.status,
+                    'shipment_label': shipment.label,
+                    })
+            except Shipment.DoesNotExist:
+                pass
+        shipment_defaults.update(kwargs.get('initial', {}))
+        kwargs['initial'] = shipment_defaults
+        super(ParcelDescriptionForm, self).__init__(instance=instance, *args, **kwargs)
+
+    def save(self, commit=True):
+        parcel = super(ParcelDescriptionForm, self).save(commit)
+        shipment, new = Shipment.objects.get_or_create(id=self.cleaned_data['shipment_id'])
+        shipment.status = self.cleaned_data['shipment_status']
+        shipment.label = self.cleaned_data['shipment_label']
+        if not shipment.label:
+            shipment.label = None
+        shipment.save()

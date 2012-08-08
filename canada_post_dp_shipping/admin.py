@@ -1,3 +1,4 @@
+from canada_post_dp_shipping.forms import ParcelDescriptionForm
 from django.core.files.base import File
 import os
 import tempfile
@@ -45,6 +46,7 @@ site.register(ParcelDescription, ParcelAdmin)
 class ParcelInline(admin.StackedInline):
     model = ParcelDescription
     extra = 0
+    form = ParcelDescriptionForm
 
 class OrderShippingAdmin(admin.ModelAdmin):
     """
