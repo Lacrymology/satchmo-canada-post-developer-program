@@ -42,8 +42,8 @@ class Migration(SchemaMigration):
         # Adding model 'Shipment'
         db.create_table('canada_post_dp_shipping_shipment', (
             ('id', self.gf('django.db.models.fields.CharField')(max_length=32, primary_key=True)),
-            ('tracking_pin', self.gf('django.db.models.fields.BigIntegerField')(default='', blank=True)),
-            ('return_tracking_pin', self.gf('django.db.models.fields.BigIntegerField')(default='', null=True, blank=True)),
+            ('tracking_pin', self.gf('django.db.models.fields.BigIntegerField')(default=None, null=True, blank=True)),
+            ('return_tracking_pin', self.gf('django.db.models.fields.BigIntegerField')(default=None, null=True, blank=True)),
             ('status', self.gf('django.db.models.fields.CharField')(max_length=14)),
             ('parcel', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['canada_post_dp_shipping.ParcelDescription'], unique=True)),
             ('label', self.gf('django.db.models.fields.files.FileField')(max_length=100, null=True, blank=True)),
@@ -138,9 +138,9 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.CharField', [], {'max_length': '32', 'primary_key': 'True'}),
             'label': ('django.db.models.fields.files.FileField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'parcel': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['canada_post_dp_shipping.ParcelDescription']", 'unique': 'True'}),
-            'return_tracking_pin': ('django.db.models.fields.BigIntegerField', [], {'default': "''", 'null': 'True', 'blank': 'True'}),
+            'return_tracking_pin': ('django.db.models.fields.BigIntegerField', [], {'default': 'None', 'null': 'True', 'blank': 'True'}),
             'status': ('django.db.models.fields.CharField', [], {'max_length': '14'}),
-            'tracking_pin': ('django.db.models.fields.BigIntegerField', [], {'default': "''", 'blank': 'True'})
+            'tracking_pin': ('django.db.models.fields.BigIntegerField', [], {'default': 'None', 'null': 'True', 'blank': 'True'})
         },
         'canada_post_dp_shipping.shipmentlink': {
             'Meta': {'object_name': 'ShipmentLink'},
