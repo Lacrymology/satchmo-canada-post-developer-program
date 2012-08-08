@@ -3,5 +3,12 @@
 {% load url from future %}
 {% block object-tools-items %}
     {{ block.super }}
+    {% if not original.shipments_created %}
     <li><a href="{% url 'admin:canada_post_dp_shipping_ordershippingservice_create_shipments' object_id %}">{% trans "Create Shipments on Canada Post for this" %}</a></li>
+    {% else %}
+    <li><a href="{% url 'admin:canada_post_dp_shipping_ordershippingservice_void_shipments' object_id %}">{% trans "Cancel Shipments for this on Canada Post" %}</a></li>
+    {% if not original.has_labels %}
+    <li><a href="{% url 'admin:canada_post_dp_shipping_ordershippingservice_get_labels' object_id %}">{% trans "Get shipment labels for this" %}</a></li>
+    {% endif %}
+    {% endif %}
 {% endblock %}
