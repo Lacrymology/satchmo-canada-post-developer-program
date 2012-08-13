@@ -107,6 +107,12 @@ config_register_list(
                         default = ('DOM.EP', 'DOM.XP', 'DOM.XP.CERT',
                                    'DOM.PC',)),
 
+    BooleanValue(SHIPPING_GROUP, 'RAISE_TOO_LARGE',
+                 description=_("Raise Too Large errors"),
+                 help_text=_("Raise a ParcelTooLarge exception when a parcel "
+                             "cannot be handled by Canada Post"),
+                 default=False),
+
     BooleanValue(SHIPPING_GROUP,
                  'VERBOSE_LOG',
                  description=_("Verbose logs"),
