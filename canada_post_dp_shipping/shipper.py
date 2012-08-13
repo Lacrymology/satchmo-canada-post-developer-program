@@ -10,7 +10,7 @@ from decimal import Decimal
 from itertools import product
 import logging
 from canada_post.errors import CanadaPostError
-from canada_post_dp_shipping.errors import ParcelTooLarge
+from canada_post_dp_shipping.errors import ParcelDimensionError
 from canada_post_dp_shipping.utils import (get_origin, get_destination,
                                            canada_post_api_kwargs)
 from django.core.cache import cache
@@ -137,7 +137,7 @@ class Shipper(BaseShipper):
                     parcel_services = cpa.get_rates(parcel, origin, destination)
                 except CanadaPostError, e:
                     if self.settings.RAISE_TOO_LARGE.value and e.code == 9111:
-                        raise ParcelTooLarge, e.message
+                        raise ParcelDimensionError, e.message
                     parcel_services = []
                 cache.set(cache_key, parcel_services)
 
