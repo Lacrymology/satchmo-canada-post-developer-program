@@ -161,6 +161,13 @@ class Shipper(BaseShipper):
             width = item.smart_attr("width")
             height = item.smart_attr("height")
             weight = item.smart_attr("weight")
+            if not all((length, width, height, weight)):
+                log.error("Dimensions error in item %s(#%d): (%s, %s, %s, %s)",
+                          item, item.id, length, width, height, weight)
+                raise ParcelDimensionError, ("Dimension errors in item {}: "
+                                       "({},{},{},{})").format(item, length,
+                                                               width, height,
+                                                               weight)
             for _ in range(amt):
                 packages.append(Package((length, width, height), weight=weight))
 
