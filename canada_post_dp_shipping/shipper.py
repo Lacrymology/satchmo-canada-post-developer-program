@@ -52,7 +52,7 @@ class Shipper(BaseShipper):
         A basic description that will be displayed to the user when selecting
         their shipping options
         """
-        return _("Canada Post - {service_type}".format(
+        return _(u"Canada Post - {service_type}".format(
             service_type=self.service_text))
 
     def cost(self):
@@ -74,7 +74,7 @@ class Shipper(BaseShipper):
         Can be a plain string or complex calcuation returning an actual date
         """
         if self.transit_time is not None:
-            return _("{days} business days".format(days=self.transit_time))
+            return _(u"{days} business days".format(days=self.transit_time))
         else:
             return _("Unknown")
 
@@ -115,11 +115,11 @@ class Shipper(BaseShipper):
         # parcels is a list of (Parcel, pack(dimensions))
         parcels, rest = self.make_parcels(cart)
         if rest:
-            log.error("There's not boxes big enough for some of these "
-                      "products: {}".format(rest))
+            log.error(u"There's not boxes big enough for some of these "
+                      u"products: {}".format(rest))
             return error_ret
-        log.debug("Calculated Parcels: [%s]", ",".join("({})".format(unicode(p))
-                                                       for p in parcels))
+        log.debug(u"Calculated Parcels: [%s]", u",".join(u"({})".format(unicode(p))
+                                                         for p in parcels))
         origin = get_origin(shop_details)
         destination = get_destination(contact)
 
@@ -164,8 +164,8 @@ class Shipper(BaseShipper):
             if not all((length, width, height, weight)):
                 log.error("Dimensions error in item %s(#%d): (%s, %s, %s, %s)",
                           item, item.id, length, width, height, weight)
-                raise ParcelDimensionError, ("Dimension errors in item {}: "
-                                       "({},{},{},{})").format(item, length,
+                raise ParcelDimensionError, (u"Dimension errors in item {}: "
+                                       u"({},{},{},{})").format(item, length,
                                                                width, height,
                                                                weight)
             for _ in range(amt):

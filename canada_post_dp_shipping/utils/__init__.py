@@ -10,7 +10,7 @@ def get_origin(shop_details):
 def get_destination(contact):
     return Destination(postal_code=contact.shipping_address.postal_code,
                        country_code=contact.shipping_address.country.iso2_code,
-                       name="{last_name}, {first_name}".format(
+                       name=u"{last_name}, {first_name}".format(
                            first_name=contact.first_name,
                            last_name=contact.last_name),
                        address=(contact.shipping_address.street1,

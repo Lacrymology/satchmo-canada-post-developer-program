@@ -130,12 +130,12 @@ class OrderShippingAdmin(admin.ModelAdmin):
                         service=order_shipping.get_service(), group=group)
                     Shipment(shipment=shipment, parcel=parcel).save()
                     cnt += 1
-            self.message_user(request, _("{count} shipments created for order "
-                                         "{order}").format(
+            self.message_user(request, _(u"{count} shipments created for order "
+                                         u"{order}").format(
                 count=cnt, order=order_shipping.order))
             if exs > 0:
-                messages.warning(request, _("{count} shipments already existed "
-                                             "for {order}").format(
+                messages.warning(request, _(u"{count} shipments already existed "
+                                            u"for {order}").format(
                     count=exs, order=order_shipping.order))
         else:
             messages.error(request, _("Unexpected error, please retry"))

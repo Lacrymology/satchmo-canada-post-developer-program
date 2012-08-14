@@ -34,8 +34,8 @@ class Box(models.Model):
                                 help_text=_("Shortest dimension in cm"))
 
     def __unicode__(self):
-        return "{} {}x{}x{}".format(self.description, self.length,
-                                    self.width, self.height)
+        return u"{} {}x{}x{}".format(self.description, self.length,
+                                     self.width, self.height)
 
     class Meta:
         verbose_name = _("box")
@@ -89,7 +89,7 @@ class OrderShippingService(models.Model):
     has_labels.boolean = True
 
     def __unicode__(self):
-        return _("Shipping service detail for {order}").format(order=self.order)
+        return _(u"Shipping service detail for {order}").format(order=self.order)
 
 class ParcelDescription(models.Model):
     shipping_detail = models.ForeignKey(OrderShippingService)
@@ -108,7 +108,7 @@ class ParcelDescription(models.Model):
             pass
         elif 'packs' in kwargs:
             packs = kwargs.pop('packs')
-            parcel = "[{}]".format(",".join("({})".format(unicode(p))
+            parcel = u"[{}]".format(u",".join(u"({})".format(unicode(p))
                 for p in packs))
             weight = sum(p.weight for p in packs)
             kwargs.update({
@@ -122,7 +122,7 @@ class ParcelDescription(models.Model):
                       height=self.box.height, weight=self.weight)
 
     def __unicode__(self):
-        return "Parcel({})".format(unicode(self.box))
+        return u"Parcel({})".format(unicode(self.box))
 
 class Shipment(models.Model):
     """
@@ -202,7 +202,7 @@ class Shipment(models.Model):
         super(Shipment, self).__init__(*args, **kwargs)
 
     def __unicode__(self):
-        return "Shipment {} for {}".format(
+        return u"Shipment {} for {}".format(
             self.id, self.parcel.shipping_detail.order)
 
     class Wait(Exception):
