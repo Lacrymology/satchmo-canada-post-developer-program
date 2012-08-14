@@ -12,7 +12,6 @@ setup(
                    "Program from Canada Post"),
     packages=find_packages(),
     install_requires = [
-        'python-canada-post',
         'django-jsonfield',
     ],
     include_package_data=True,
