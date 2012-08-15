@@ -180,18 +180,21 @@ class OrderShippingAdmin(admin.ModelAdmin):
 
         orders.append(shipping_service.order)
 
-        tmp = tempfile.mkstemp(suffix=".zip")
-        tf = zipfile.ZipFile(tmp[1], mode="w")
-        for fileobj in files:
-            filename = os.path.basename(fileobj.name)
-            tf.write(fileobj.name, filename)
-        tf.close()
+        if files:
+            tmp = tempfile.mkstemp(suffix=".zip")
+            tf = zipfile.ZipFile(tmp[1], mode="w")
+            for fileobj in files:
+                filename = os.path.basename(fileobj.name)
+                tf.write(fileobj.name, filename)
+            tf.close()
 
-        response = HttpResponse(File(file(tmp[1])), mimetype="application/zip")
-        response['Content-disposition'] = ('attachment; '
-                                           'filename='
-                                           '"labels_for_orders_{}.zip"').format(
-            "-".join(str(o.id) for o in orders))
+            response = HttpResponse(File(file(tmp[1])), mimetype="application/zip")
+            response['Content-disposition'] = ('attachment; '
+                                               'filename='
+                                               '"labels_for_orders_{}.zip"').format(
+                "-".join(str(o.id) for o in orders))
+        else:
+            response = HttpResponseRedirect(request.path_info)
         return response
     get_labels.short_description = _("Get label links for the selected "
                                           "orders")
