@@ -156,22 +156,29 @@ class OrderShippingAdmin(admin.ModelAdmin):
 
         files = []
         orders = []
-        for detail in queryset:
-            for parcel in detail.parceldescription_set.select_related().all():
-                shipment = parcel.shipment
-                if not shipment.label:
-                    try:
-                        shipment.download_label(args['username'],
-                                                args['password'])
-                    except Shipment.Wait:
-                        self.message_user(_("Failed downloading label for "
-                                            "shipment {id} because the "
-                                            "Canada Post server is busy, "
-                                            "please wait a couple of minutes "
-                                            "and try again").format(
-                            id=shipment.id))
-                files.append(shipment.label.file)
-            orders.append(detail.order)
+        for shipping_service in queryset:
+            try:
+                for parcel in (shipping_service.parceldescription_set
+                               .select_related().all()):
+                    shipment = parcel.shipment
+                    if not shipment.label:
+                        try:
+                            shipment.download_label(args['username'],
+                                                    args['password'])
+                        except Shipment.Wait:
+                            self.message_user(_("Failed downloading label for "
+                                                "shipment {id} because the "
+                                                "Canada Post server is busy, "
+                                                "please wait a couple of "
+                                                "minutes and try again").format(
+                                id=shipment.id))
+                    files.append(shipment.label.file)
+            except Shipment.DoesNotExist:
+                messages.error(request, _("One or more shipments for {order} "
+                                          "haven't been yet created").format(
+                    order=shipping_service.order))
+
+        orders.append(shipping_service.order)
 
         tmp = tempfile.mkstemp(suffix=".zip")
         tf = zipfile.ZipFile(tmp[1], mode="w")
