@@ -169,7 +169,7 @@ class Shipper(BaseShipper):
                                                                width, height,
                                                                weight)
             for _ in range(amt):
-                packages.append(Package((length, width, height), weight=weight))
+                packages.append(Package((length, width, height), weight=weight, description=u"{}(#{})".format(item.name, item.id)))
 
         boxes = []
         for box in Box.objects.all():
