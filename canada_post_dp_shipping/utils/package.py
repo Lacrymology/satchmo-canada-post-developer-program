@@ -15,7 +15,7 @@ import unittest
 class Package(object):
     """Represents a package as used in cargo/shipping aplications."""
 
-    def __init__(self, size, weight=0, nosort=False):
+    def __init__(self, size, weight=0, description="", nosort=False):
         """Generates a new Package object.
 
         The size can be given as an list of integers or an string where the sizes are
@@ -35,6 +35,7 @@ class Package(object):
                                                              int(self.length)), reverse=True)
         self.volume = self.heigth * self.width * self.length
         self.size = (self.heigth, self.width, self.length)
+        self.description = description
 
     def _get_gurtmass(self):
         """'gurtamss' is the circumference of the box plus the length - which is often used to
@@ -119,7 +120,11 @@ class Package(object):
             new_weight = self.weight * multiplicand
         else:
             new_weight = None
-        return Package((self.heigth, self.width, self.length * multiplicand), new_weight)
+        new_description = ("|".join(self.description
+                                    for i in range(multiplicand))
+                           if self.description else "")
+        return Package((self.heigth, self.width, self.length * multiplicand),
+                       new_weight, new_description)
 
     def __add__(self, other):
         """
@@ -150,20 +155,22 @@ class Package(object):
         else:
             new_weight = None
 
-        return Package((stack_on[0], stack_on[1], mysides[0] + othersides[0]), new_weight)
+        new_description = "|".join(desc for desc in
+            (self.description, other.description) if desc)
+        return Package((stack_on[0], stack_on[1], mysides[0] + othersides[0]),
+                       new_weight, description=new_description)
 
     def __str__(self):
-        if self.weight:
-            return "%dx%dx%d %dkg" % (self.heigth, self.width, self.length, self.weight)
-        else:
-            return "%dx%dx%d" % (self.heigth, self.width, self.length)
+        dimensions = "{}x{}x{}".format(self.heigth, self.width, self.length)
+        weight = " {}".format(self.weight) if self.weight else ""
+        description = " {}".format(self.description) if self.description else ""
+        return "%s%s%s" % (dimensions, weight, description)
 
     def __repr__(self):
-        if self.weight:
-            return "<Package %dx%dx%d %d>" % (self.heigth, self.width, self.length, self.weight)
-        else:
-            return "<Package %dx%dx%d>" % (self.heigth, self.width, self.length)
-
+        dimensions = "{}x{}x{}".format(self.heigth, self.width, self.length)
+        weight = " {}".format(self.weight) if self.weight else ""
+        description = u" {}".format(self.description) if self.description else ""
+        return "<Package %s%s%s>" % (dimensions, weight, description)
 
 def buendelung(kartons, maxweight=31000, maxgurtmass=3000):
     """Versucht Pakete so zu bündeln, so dass das Gurtmass nicht überschritten wird.
