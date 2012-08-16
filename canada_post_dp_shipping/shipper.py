@@ -116,9 +116,15 @@ class Shipper(BaseShipper):
         # parcels is a list of (Parcel, pack(dimensions))
         parcels, rest = self.make_parcels(cart)
         if rest:
+            from django.contrib.sites.models import Site
+            site = Site.objects.get_current()
             error_message = (u"There's not boxes big enough for some of these "
                              u"products: {}").format(rest)
-            send_store_mail(error_message)
+            subject = u"There's not boxes big enough for some products"
+            send_store_mail(subject, context={ 'site': site,
+                                               'product_list': rest },
+                            template=("canada_post_dp_shipping/mail/"
+                                      "add_boxes.txt"), send_to_store=True)
             raise ParcelDimensionError, error_message
         log.debug(u"Calculated Parcels: [%s]", u",".join(u"({})".format(unicode(p))
                                                          for p in parcels))
