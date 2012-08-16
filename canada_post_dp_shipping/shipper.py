@@ -17,6 +17,7 @@ from django.core.cache import cache
 from django.utils.translation import ugettext as _
 from livesettings.functions import config_get_group
 from shipping.modules.base import BaseShipper
+from satchmo_store.mail import send_store_mail
 
 from canada_post.api import CanadaPostAPI
 from canada_post.util.parcel import Parcel
@@ -115,9 +116,10 @@ class Shipper(BaseShipper):
         # parcels is a list of (Parcel, pack(dimensions))
         parcels, rest = self.make_parcels(cart)
         if rest:
-            log.error(u"There's not boxes big enough for some of these "
-                      u"products: {}".format(rest))
-            return error_ret
+            error_message = (u"There's not boxes big enough for some of these "
+                             u"products: {}").format(rest)
+            send_store_mail(error_message)
+            raise ParcelDimensionError, error_message
         log.debug(u"Calculated Parcels: [%s]", u",".join(u"({})".format(unicode(p))
                                                          for p in parcels))
         origin = get_origin(shop_details)
