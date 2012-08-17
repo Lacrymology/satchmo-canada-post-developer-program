@@ -1,4 +1,6 @@
+import logging
 from canada_post_dp_shipping.forms import ParcelDescriptionForm
+from canada_post_dp_shipping.tasks import USE_CELERY
 from django.core.files.base import File
 import os
 import tempfile
@@ -17,6 +19,8 @@ from canada_post_dp_shipping.models import (Box, OrderShippingService,
                                             Shipment)
 
 from livesettings.functions import config_get_group
+
+log = logging.getLogger("canada_post_dp_shipping.admin")
 
 class BoxAdmin(admin.ModelAdmin):
     """
@@ -124,15 +128,28 @@ class OrderShippingAdmin(admin.ModelAdmin):
                     if parcel.shipment:
                         exs += 1
                 except Shipment.DoesNotExist:
-                    shipment = cpa.create_shipment(
+                    cpa_ship = cpa.create_shipment(
                         parcel=parcel.get_parcel(), origin=origin,
                         destination=destination,
                         service=order_shipping.get_service(), group=group)
-                    Shipment(shipment=shipment, parcel=parcel).save()
-                    cnt += 1
+                    shipment = Shipment(shipment=cpa_ship, parcel=parcel)
+                    shipment.save()
+                    if USE_CELERY:
+                        from canada_post_dp_shipping.tasks import get_label
+                        get_label.apply_async(args=(shipment,
+                                                    cpa.auth.username,
+                                                    cpa.auth.password),
+                                              # download labels in 3 minutes
+                                              countdown=3*60)
+
+                cnt += 1
             self.message_user(request, _(u"{count} shipments created for order "
                                          u"{order}").format(
                 count=cnt, order=order_shipping.order))
+            if USE_CELERY:
+                self.message_user(request, _(u"Shipping labels will be "
+                                             u"automatically downloaded in "
+                                             u"three minutes"))
             if exs > 0:
                 messages.warning(request, _(u"{count} shipments already existed "
                                             u"for {order}").format(
