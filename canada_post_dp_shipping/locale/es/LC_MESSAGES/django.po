@@ -3,14 +3,13 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2012-08-18 17:00-0400\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2012-08-20 00:59-0300\n"
+"Last-Translator: Tomas Neme <lacrymology@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
@@ -20,65 +19,63 @@ msgstr ""
 
 #: admin.py:99
 msgid "Please confirm the parcels size and weight"
-msgstr ""
+msgstr "Por favor, confirme el tamaño y peso de los paquetes"
 
 #: admin.py:146
 msgid "{count} shipments created for order {order}"
-msgstr ""
+msgstr "{count} envíos creados para el pedido {order}"
 
 #: admin.py:150
 msgid "Shipping labels will be automatically downloaded in three minutes"
-msgstr ""
+msgstr "Las etiquetas de envío serán descargadas automáticamente en tres minutos"
 
 #: admin.py:154
 msgid "{count} shipments already existed for {order}"
-msgstr ""
+msgstr "{count} envíos ya existían para {order}"
 
 #: admin.py:158
 msgid "Unexpected error, please retry"
-msgstr ""
+msgstr "Error inesperado, por favor reintentar"
 
 #: admin.py:160
 msgid "Create shipments on the Canada Post server for the selected orders"
-msgstr ""
+msgstr "Crear envíos en el servidor del Correo de Canadá para los pedidos seleccionados"
 
 #: admin.py:186
-msgid ""
-"Failed downloading label for shipment {id} because the Canada Post server is "
-"busy, please wait a couple of minutes and try again"
-msgstr ""
+msgid "Failed downloading label for shipment {id} because the Canada Post server is busy, please wait a couple of minutes and try again"
+msgstr "Error descargando la etiqueta para el envío {id} porque el servidor del Correo de Canadá está ocupado. Por favor espere unos minutos e intente nuevamente"
 
 #: admin.py:194
 msgid "One or more shipments for {order} haven't been yet created"
-msgstr ""
+msgstr "Uno o más envíos para {order} no han sido creados"
 
 #: admin.py:216
 msgid "Get label links for the selected orders"
-msgstr ""
+msgstr "Obtener enlaces de las etiquetas para los pedidos seleccionados"
 
 #: admin.py:239
 msgid "Could not void shipment {shipment_id} for order {order_id}"
-msgstr ""
+msgstr "No se ha podido cancelar el envío {shipment_id} para el pedido {order_id}"
 
 #: admin.py:250
 msgid "All shipments voided"
-msgstr ""
+msgstr "Todos los envíos cancelados"
 
 #: admin.py:252
 msgid "{good_count} shipments voided, {bad_count} problems"
-msgstr ""
+msgstr "{good_count} envíos cancelados, {bad_count} problemas"
 
 #: admin.py:256
 msgid "{count} shipments didn't exist"
-msgstr ""
+msgstr "{count} envíos no existían"
 
 #: admin.py:260
 msgid "Cancel created shipments for the selected orders"
-msgstr ""
+msgstr "Cancelar envíos creados para los pedidos seleccionados"
 
 #: admin.py:266
 msgid "Transmit shipments for the selected orders"
-msgstr ""
+msgstr "Transmitir envíos para los pedidos seleccionados"
 
 #: config.py:13
 msgid "Canada Post Shipping Dev Prog Settings"
@@ -97,10 +94,7 @@ msgid "Access production Canada Post server"
 msgstr ""
 
 #: config.py:30
-msgid ""
-"Use this when your store is in production. NOTE: the values you'll see when "
-"in development mode will NOT reflect the real packaging. This is a Canada "
-"Post limitation"
+msgid "Use this when your store is in production. NOTE: the values you'll see when in development mode will NOT reflect the real packaging. This is a Canada Post limitation"
 msgstr ""
 
 #: config.py:38
@@ -116,8 +110,7 @@ msgid "Canada Post Username"
 msgstr ""
 
 #: config.py:46
-msgid ""
-"The Canada Post username part of the production API production Key Number"
+msgid "The Canada Post username part of the production API production Key Number"
 msgstr ""
 
 #: config.py:52
@@ -161,9 +154,7 @@ msgid "Raise Too Large errors"
 msgstr ""
 
 #: config.py:112
-msgid ""
-"Raise a ParcelDimensionError exception when a parcel cannot be handled by "
-"Canada Post"
+msgid "Raise a ParcelDimensionError exception when a parcel cannot be handled by Canada Post"
 msgstr ""
 
 #: config.py:118
@@ -171,86 +162,85 @@ msgid "Verbose logs"
 msgstr ""
 
 #: config.py:119
-msgid ""
-"Send the entire request and response to the log - for debugging help when "
-"setting up Canada Post."
+msgid "Send the entire request and response to the log - for debugging help when setting up Canada Post."
 msgstr ""
 
 #: models.py:24
 msgid "description"
-msgstr ""
+msgstr "descripción"
 
 #: models.py:25
 msgid "Box name"
-msgstr ""
+msgstr "Nombre de la caja"
 
 #: models.py:26
 msgid "length"
-msgstr ""
+msgstr "largo"
 
 #: models.py:28
 msgid "Longest dimension in cm"
-msgstr ""
+msgstr "Dimensión máxima en cm"
 
-#: models.py:29 models.py:32
+#: models.py:29
+#: models.py:32
 msgid "width"
-msgstr ""
+msgstr "ancho"
 
 #: models.py:31
 msgid "Second longest dimension in cm"
-msgstr ""
+msgstr "Segunda dimensión en cm"
 
 #: models.py:34
 msgid "Shortest dimension in cm"
-msgstr ""
+msgstr "Dimensión menor en cm"
 
 #: models.py:41
 msgid "box"
-msgstr ""
+msgstr "caja"
 
 #: models.py:42
 msgid "boxes"
-msgstr ""
+msgstr "cajas"
 
 #: models.py:57
 msgid "order"
-msgstr ""
+msgstr "pedido"
 
 #: models.py:58
 msgid "code"
-msgstr ""
+msgstr "código"
 
 #: models.py:59
 msgid "Internal Canada Post product code"
-msgstr ""
+msgstr "Código de producto interno del Correo de Canada"
 
 #: models.py:92
 msgid "Shipping service detail for {order}"
-msgstr ""
+msgstr "Detalle del servicio de envío para {order}"
 
 #: models.py:98
 msgid "parcel description"
-msgstr ""
+msgstr "descripción del paquete"
 
 #: models.py:99
 msgid "List of packages that go inside this parcel"
-msgstr ""
+msgstr "Lista de ítems que van dentro de éste paquete"
 
 #: models.py:102
 msgid "weight"
-msgstr ""
+msgstr "peso"
 
 #: models.py:103
 msgid "Total weight of the parcel, in kilograms"
-msgstr ""
+msgstr "Peso total del paquete, en kilogramos"
 
 #: models.py:145
 msgid "parcel"
-msgstr ""
+msgstr "paquete"
 
 #: models.py:147
 msgid "label"
-msgstr ""
+msgstr "etiqueta"
 
 #: shipper.py:56
 msgid "Canada Post - {service_type}"
@@ -262,42 +252,40 @@ msgstr ""
 
 #: shipper.py:78
 msgid "{days} business days"
-msgstr ""
+msgstr "{days} días hábiles"
 
 #: shipper.py:80
 msgid "Unknown"
-msgstr ""
+msgstr "Desconocido"
 
 #: templates/admin/canada_post_dp_shipping/ordershippingservice/change_form.html:7
 msgid "Create Shipments on Canada Post for this"
-msgstr ""
+msgstr "Crear Envíos en el Correo de Canada para ésto"
 
 #: templates/admin/canada_post_dp_shipping/ordershippingservice/change_form.html:9
 msgid "Cancel Shipments for this on Canada Post"
-msgstr ""
+msgstr "Cancelar Envíos para ésto en el Correo de Canada"
 
 #: templates/admin/canada_post_dp_shipping/ordershippingservice/change_form.html:11
 msgid "Get shipment labels for this"
-msgstr ""
+msgstr "Obtener etiquetas de envío para ésto"
 
 #: templates/admin/shop/order/change_form.html:7
 msgid "See shipping details for this order"
-msgstr ""
+msgstr "Ver detalles de envío para este pedido"
 
 #: templates/canada_post_dp_shipping/admin/confirm_shipments.html:7
 msgid "Home"
-msgstr ""
+msgstr "Inicio"
 
 #: templates/canada_post_dp_shipping/admin/confirm_shipments.html:11
 msgid "Create Shipments"
-msgstr ""
+msgstr "Crear Envíos"
 
 #: templates/canada_post_dp_shipping/admin/confirm_shipments.html:16
 #, python-format
-msgid ""
-"Please confirm the shipment parcels for %(order)s. Are you sure these "
-"parcels correct?"
-msgstr ""
+msgid "Please confirm the shipment parcels for %(order)s. Are you sure these parcels correct?"
+msgstr "Por favor, confirmar los paquetes del envío para %(order)s. Está seguro que los paquetes son correctos?"
 
 #: templates/canada_post_dp_shipping/admin/confirm_shipments.html:20
 #, python-format
@@ -310,7 +298,15 @@ msgid ""
 "                </ul>\n"
 "            "
 msgstr ""
+"\n"
+"                Paquete #%(counter)s:\n"
+"                <ul>\n"
+"                    <li>Caja: %(box)s</li>\n"
+"                    <li>Peso total: %(weight)skg</li>\n"
+"                </ul>\n"
+"            "
 
 #: templates/canada_post_dp_shipping/admin/confirm_shipments.html:33
 msgid "Yes, I'm sure"
-msgstr ""
+msgstr "Sí, estoy seguro"
+
