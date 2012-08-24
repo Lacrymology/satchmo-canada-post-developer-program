@@ -146,6 +146,9 @@ class Shipper(BaseShipper):
                 except CanadaPostError, e:
                     if self.settings.RAISE_TOO_LARGE.value and e.code == 9111:
                         raise ParcelDimensionError, e.message
+                    else:
+                        log.error("Canada Post returned with error: %s|%s",
+                                  e, e.message)
                     parcel_services = []
                 cache.set(cache_key, parcel_services)
 
