@@ -150,6 +150,7 @@ def allpermutations_helper(permuted, todo, maxcounter, callback, bin, bestpack, 
         thispackage = todo[0]
         for dimensions in set(permutations((thispackage[0], thispackage[1], thispackage[2]))):
             thispackage = Package(dimensions,
+                                  weight=thispackage.weight,
                                   description=thispackage.description,
                                   nosort=True)
             if thispackage in bin:
