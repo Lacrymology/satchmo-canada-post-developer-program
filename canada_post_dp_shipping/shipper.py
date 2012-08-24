@@ -148,7 +148,7 @@ class Shipper(BaseShipper):
                         raise ParcelDimensionError, e.message
                     else:
                         log.error("Canada Post returned with error: %s|%s",
-                                  e, e.message)
+                                  e.code, e.message)
                     parcel_services = []
                 cache.set(cache_key, parcel_services)
 
