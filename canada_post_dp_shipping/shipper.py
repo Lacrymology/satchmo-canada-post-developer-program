@@ -123,7 +123,7 @@ class Shipper(BaseShipper):
             subject = u"There's not boxes big enough for some products"
             send_store_mail(subject, context={ 'site': site,
                                                'product_list': rest },
-                            template=("canada_post_dp_shipping/mail/"
+                            template=("canada_post_dp_shipping/admin/mail/"
                                       "add_boxes.txt"), send_to_store=True)
             raise ParcelDimensionError, error_message
         log.debug(u"Calculated Parcels: [%s]", u",".join(u"({})".format(unicode(p))
