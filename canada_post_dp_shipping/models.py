@@ -233,7 +233,7 @@ def create_shipping_details(sender, instance, **kwargs):
     from shipping.config import shipping_method_by_key
     order = instance
     if not (order.shipping_model is not None and
-            order.shipping_model.startswith("canadapost-dev-prog-")):
+            order.shipping_model.startswith("canadapost-dp-")):
         return
     # we don't want more than one of these, so we overwrite
     shipping_detail, new = OrderShippingService.objects.get_or_create(

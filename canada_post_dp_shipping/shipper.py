@@ -38,7 +38,7 @@ class Shipper(BaseShipper):
         else:
             self.service_code = "BAD.CODE"
             self.service_text = "Uninitialized"
-        self.id = "canadapost-dev-prog-{}".format(self.service_code)
+        self.id = "canadapost-dp-{}".format(self.service_code)
         self.settings = config_get_group('canada_post_dp_shipping')
         super(Shipper, self).__init__(cart=cart, contact=contact)
 
@@ -53,7 +53,7 @@ class Shipper(BaseShipper):
         A basic description that will be displayed to the user when selecting
         their shipping options
         """
-        return _(u"Canada Post - {service_type}".format(
+        return _(u"CP - {service_type}".format(
             service_type=self.service_text))
 
     def cost(self):
@@ -104,7 +104,7 @@ class Shipper(BaseShipper):
 
     def get_rates(self, cart, contact):
         from satchmo_store.shop.models import Config
-        error_ret = False, None, None
+        error_ret = False, None, []
         shop_details = Config.objects.get_current()
 
         # always use production api keys for get_rates, you don't get charged
