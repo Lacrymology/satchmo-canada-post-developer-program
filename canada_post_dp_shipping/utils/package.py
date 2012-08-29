@@ -166,6 +166,12 @@ class Package(object):
         description = " {}".format(self.description.encode('utf8')) if self.description else ""
         return "%s%s%s" % (dimensions, weight, description)
 
+    def __unicode__(self):
+        dimensions = u"{}x{}x{}".format(self.heigth, self.width, self.length)
+        weight = u" {}".format(self.weight) if self.weight else ""
+        description = u" {}".format(self.description) if self.description else ""
+        return u"%s%s%s" % (dimensions, weight, description)
+
     def __repr__(self):
         dimensions = "{}x{}x{}".format(self.heigth, self.width, self.length)
         weight = " {}".format(self.weight) if self.weight else ""
