@@ -161,16 +161,16 @@ class Package(object):
                        new_weight, description=new_description)
 
     def __str__(self):
-        dimensions = "{}x{}x{}".format(self.heigth, self.width, self.length)
-        weight = " {}".format(self.weight) if self.weight else ""
-        description = " {}".format(self.description) if self.description else ""
-        return "%s%s%s" % (dimensions, weight, description)
+        dimensions = u"{}x{}x{}".format(self.heigth, self.width, self.length)
+        weight = u" {}".format(self.weight) if self.weight else ""
+        description = u" {}".format(self.description) if self.description else ""
+        return u"%s%s%s" % (dimensions, weight, description)
 
     def __repr__(self):
-        dimensions = "{}x{}x{}".format(self.heigth, self.width, self.length)
-        weight = " {}".format(self.weight) if self.weight else ""
+        dimensions = u"{}x{}x{}".format(self.heigth, self.width, self.length)
+        weight = u" {}".format(self.weight) if self.weight else ""
         description = u" {}".format(self.description) if self.description else ""
-        return "<Package %s%s%s>" % (dimensions, weight, description)
+        return u"<Package %s%s%s>" % (dimensions, weight, description)
 
 def buendelung(kartons, maxweight=31000, maxgurtmass=3000):
     """Versucht Pakete so zu bündeln, so dass das Gurtmass nicht überschritten wird.
