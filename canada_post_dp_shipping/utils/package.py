@@ -175,7 +175,7 @@ class Package(object):
     def __repr__(self):
         dimensions = "{}x{}x{}".format(self.heigth, self.width, self.length)
         weight = " {}".format(self.weight) if self.weight else ""
-        description = " {}".format(self.description.encode('utf8')) if self.description else ""
+        description = (" %s" % (self.description.encode('utf8'))) if self.description else ""
         return "<Package %s%s%s>" % (dimensions, weight, description)
 
 def buendelung(kartons, maxweight=31000, maxgurtmass=3000):
