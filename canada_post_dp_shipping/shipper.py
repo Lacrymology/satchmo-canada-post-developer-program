@@ -119,7 +119,8 @@ class Shipper(BaseShipper):
             from django.contrib.sites.models import Site
             site = Site.objects.get_current()
             error_message = (u"There's not boxes big enough for some of these "
-                             u"products: {}").format(rest)
+                             u"products: ({})").format(u", ".join(
+                u"Package({})".format(unicode(p)) for p in rest))
             subject = u"There's not boxes big enough for some products"
             send_store_mail(subject, context={ 'site': site,
                                                'product_list': rest },
