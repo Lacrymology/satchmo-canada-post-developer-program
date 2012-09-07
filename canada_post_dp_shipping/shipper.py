@@ -77,7 +77,7 @@ class Shipper(BaseShipper):
         if self.transit_time is not None:
             return _(u"{days} business days".format(days=self.transit_time))
         else:
-            return _("Unknown")
+            return None
 
     def valid(self, order=None):
         """
