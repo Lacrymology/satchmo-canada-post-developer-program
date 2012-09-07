@@ -100,6 +100,8 @@ class Shipper(BaseShipper):
         self.transit_time = None # unknown transit time, as yet
         self.is_valid, self.charges, self.services = self.get_rates(cart,
                                                                    contact)
+        if self.services:
+            self.transit_time = max(s.transit_time for s, p, d in self.services)
         self._calculated = True
 
     def get_rates(self, cart, contact):
