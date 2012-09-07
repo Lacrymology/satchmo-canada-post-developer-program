@@ -68,7 +68,7 @@ class Shipper(BaseShipper):
         """
         Describes the actual delivery service (Mail, FedEx, DHL, UPS, etc)
         """
-        return _("Canada Post Developer Program")
+        return _("Canada Post")
 
     def expectedDelivery(self):
         """
