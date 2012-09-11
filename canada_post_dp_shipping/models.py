@@ -94,8 +94,7 @@ class OrderShippingService(models.Model):
 class ParcelDescription(models.Model):
     shipping_detail = models.ForeignKey(OrderShippingService)
     box = models.ForeignKey(Box)
-    parcel = models.CharField(max_length=256,
-                              verbose_name=_("parcel description"),
+    parcel = models.TextField(verbose_name=_("parcel description"),
                               help_text=_("List of packages that go inside "
                                           "this parcel"),)
     weight = models.DecimalField(max_digits=5, decimal_places=3,
