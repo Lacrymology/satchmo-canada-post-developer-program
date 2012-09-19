@@ -129,7 +129,8 @@ class Shipper(BaseShipper):
                             template=("canada_post_dp_shipping/admin/mail/"
                                       "add_boxes.txt"), send_to_store=True)
             raise ParcelDimensionError, error_message
-        log.debug(u"Calculated Parcels: [%s]", u",".join(u"({},[{}])".format(pr, ",".join(unicode(pk) for pk in pks)) for pr, pks in parcels))
+        log.debug(u"Calculated Parcels: [%s]", u",".join(u"({},[{}])".format(
+            pr, ",".join(unicode(pk) for pk in pks)) for pr, pks in parcels))
         origin = get_origin(shop_details)
         destination = get_destination(contact)
 

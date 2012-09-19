@@ -7,6 +7,7 @@ Created by Maximillian Dornseif on 2006-12-02.
 Copyright HUDORA GmbH 2006, 2007, 2010
 You might consider this BSD-Licensed.
 """
+from decimal import Decimal
 
 import doctest
 import unittest
@@ -27,12 +28,12 @@ class Package(object):
         """
         self.weight = weight
         if "x" in size:
-            self.heigth, self.width, self.length = [int(x) for x in size.split('x')]
+            self.heigth, self.width, self.length = [Decimal(x) for x in size.split('x')]
         else:
             self.heigth, self.width, self.length = size
         if not nosort:
-            (self.heigth, self.width, self.length) = sorted((int(self.heigth), int(self.width),
-                                                             int(self.length)), reverse=True)
+            (self.heigth, self.width, self.length) = sorted(
+                (self.heigth, self.width, self.length), reverse=True)
         self.volume = self.heigth * self.width * self.length
         self.size = (self.heigth, self.width, self.length)
         self.description = description
@@ -91,7 +92,8 @@ class Package(object):
         return self[0] >= other[0] and self[1] >= other[1] and self[2] >= other[2]
 
     def __hash__(self):
-        return self.heigth + (self.width << 16) + (self.length << 32)
+        return (int(self.heigth) + (int(self.width) << 16) +
+                (int(self.length) << 32))
 
     def __eq__(self, other):
         """Package objects are equal if they have exactly the same dimensions.
