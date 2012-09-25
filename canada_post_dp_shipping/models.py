@@ -50,6 +50,14 @@ class Box(models.Model):
     def volume(self):
         return self.length * self.width * self.height
 
+    def clean(self):
+        # enforce that length >= width >= height
+        dims = [self.length, self.width, self.height]
+        for attr in 'length', 'width', 'height':
+            val = max(dims)
+            setattr(self, attr, val)
+            dims.remove(val)
+
 class OrderShippingService(models.Model):
     """
     Save shipping details, such as link and product code
