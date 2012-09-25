@@ -31,7 +31,10 @@ class ParcelDescriptionForm(forms.ModelForm):
 
     def save(self, commit=True):
         parcel = super(ParcelDescriptionForm, self).save(commit)
-        shipment, new = Shipment.objects.get_or_create(id=self.cleaned_data['shipment_id'])
+        shipment_kwargs = { 'parcel': parcel }
+        if self.cleaned_data['shipment_id']:
+            shipment_kwargs['id'] = self.cleaned_data['shipment_id']
+        shipment, new = Shipment.objects.get_or_create(**shipment_kwargs)
         shipment.status = self.cleaned_data['shipment_status']
         shipment.label = self.cleaned_data['shipment_label']
         if not shipment.label:
