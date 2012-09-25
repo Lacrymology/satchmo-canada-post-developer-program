@@ -136,11 +136,12 @@ class OrderShippingAdmin(admin.ModelAdmin):
                     shipment.save()
                     if USE_CELERY:
                         from canada_post_dp_shipping.tasks import get_label
-                        get_label.apply_async(args=(shipment,
+                        get_label.apply_async(args=(shipment.id,
                                                     cpa.auth.username,
                                                     cpa.auth.password),
                                               # download labels in 3 minutes
-                                              countdown=3*60)
+                                              #countdown=3*60)
+                                              countdown=1)
 
                 cnt += 1
             self.message_user(request, _(u"{count} shipments created for order "
