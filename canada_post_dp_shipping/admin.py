@@ -36,6 +36,7 @@ class LinkInline(admin.StackedInline):
 
 class ShipmentAdmin(admin.ModelAdmin):
     inlines = [LinkInline]
+    readonly_fields = ['parcel', ]
 site.register(Shipment, ShipmentAdmin)
 
 class ShipmentInline(admin.StackedInline):
@@ -43,7 +44,7 @@ class ShipmentInline(admin.StackedInline):
     extra = 0
 
 class ParcelAdmin(admin.ModelAdmin):
-    readonly_fields = ['parcel']
+    readonly_fields = ['shipping_detail', ]
     inlines = [ShipmentInline]
 site.register(ParcelDescription, ParcelAdmin)
 

@@ -40,7 +40,7 @@ class Box(models.Model):
     class Meta:
         verbose_name = _("box")
         verbose_name_plural = _("boxes")
-        ordering = ['-length', '-width', '-height']
+        ordering = ['description', '-length', '-width', '-height']
         # each box must be unique
         unique_together = ("length", "width", "height")
 
@@ -65,6 +65,11 @@ class OrderShippingService(models.Model):
     order = models.OneToOneField(Order, verbose_name=_("order"), editable=False)
     code = models.CharField(max_length=16, verbose_name=_("code"),
                             help_text=_("Internal Canada Post product code"))
+
+    class Meta:
+        verbose_name = _('order shipping service')
+        verbose_name_plural = _('order shipping services')
+        ordering = ['-order']
 
     def get_service(self):
         return Service(data={'code': self.code})
@@ -109,6 +114,11 @@ class ParcelDescription(models.Model):
                                  verbose_name=_("weight"),
                                  help_text=_("Total weight of the parcel, "
                                              "in kilograms"))
+
+    class Meta:
+        verbose_name = _('parcel description')
+        verbose_name_plural = _('parcel descriptions')
+        ordering = ['-shipping_detail__order', 'id']
 
     def __init__(self, *args, **kwargs):
         if 'parcel' in kwargs:

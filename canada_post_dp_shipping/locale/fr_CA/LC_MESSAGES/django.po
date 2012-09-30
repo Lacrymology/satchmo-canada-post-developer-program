@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-08-18 17:00-0400\n"
+"POT-Creation-Date: 2012-09-30 17:06-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,65 +17,65 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: admin.py:99
+#: admin.py:100
 msgid "Please confirm the parcels size and weight"
 msgstr ""
 
-#: admin.py:146
+#: admin.py:148
 msgid "{count} shipments created for order {order}"
 msgstr ""
 
-#: admin.py:150
+#: admin.py:152
 msgid "Shipping labels will be automatically downloaded in three minutes"
 msgstr ""
 
-#: admin.py:154
+#: admin.py:156
 msgid "{count} shipments already existed for {order}"
 msgstr ""
 
-#: admin.py:158
+#: admin.py:160
 msgid "Unexpected error, please retry"
 msgstr ""
 
-#: admin.py:160
+#: admin.py:162
 msgid "Create shipments on the Canada Post server for the selected orders"
 msgstr ""
 
-#: admin.py:186
+#: admin.py:188
 msgid ""
 "Failed downloading label for shipment {id} because the Canada Post server is "
 "busy, please wait a couple of minutes and try again"
 msgstr ""
 
-#: admin.py:194
+#: admin.py:196
 msgid "One or more shipments for {order} haven't been yet created"
 msgstr ""
 
-#: admin.py:216
+#: admin.py:218
 msgid "Get label links for the selected orders"
 msgstr ""
 
-#: admin.py:239
+#: admin.py:241
 msgid "Could not void shipment {shipment_id} for order {order_id}"
 msgstr ""
 
-#: admin.py:250
+#: admin.py:252
 msgid "All shipments voided"
 msgstr ""
 
-#: admin.py:252
+#: admin.py:254
 msgid "{good_count} shipments voided, {bad_count} problems"
 msgstr ""
 
-#: admin.py:256
+#: admin.py:258
 msgid "{count} shipments didn't exist"
 msgstr ""
 
-#: admin.py:260
+#: admin.py:262
 msgid "Cancel created shipments for the selected orders"
 msgstr ""
 
-#: admin.py:266
+#: admin.py:268
 msgid "Transmit shipments for the selected orders"
 msgstr ""
 
@@ -211,60 +211,68 @@ msgstr ""
 msgid "boxes"
 msgstr ""
 
-#: models.py:57
+#: models.py:65
 msgid "order"
 msgstr ""
 
-#: models.py:58
+#: models.py:66
 msgid "code"
 msgstr ""
 
-#: models.py:59
+#: models.py:67
 msgid "Internal Canada Post product code"
 msgstr ""
 
-#: models.py:92
+#: models.py:70
+msgid "order shipping service"
+msgstr ""
+
+#: models.py:71
+msgid "order shipping services"
+msgstr ""
+
+#: models.py:105
 msgid "Shipping service detail for {order}"
 msgstr ""
 
-#: models.py:98
+#: models.py:110 models.py:119
 msgid "parcel description"
 msgstr ""
 
-#: models.py:99
+#: models.py:111
 msgid "List of packages that go inside this parcel"
 msgstr ""
 
-#: models.py:102
+#: models.py:114
 msgid "weight"
 msgstr ""
 
-#: models.py:103
+#: models.py:115
 msgid "Total weight of the parcel, in kilograms"
 msgstr ""
 
-#: models.py:145
+#: models.py:120
+msgid "parcel descriptions"
+msgstr ""
+
+#: models.py:162
 msgid "parcel"
 msgstr ""
 
-#: models.py:147
+#: models.py:164
 msgid "label"
 msgstr ""
 
 #: shipper.py:56
-msgid "Canada Post - {service_type}"
+msgid "CP - {service_type}"
 msgstr ""
 
 #: shipper.py:71
-msgid "Canada Post Developer Program"
+msgid "Canada Post"
 msgstr ""
 
 #: shipper.py:78
 msgid "{days} business days"
-msgstr ""
-
-#: shipper.py:80
-msgid "Unknown"
 msgstr ""
 
 #: templates/admin/canada_post_dp_shipping/ordershippingservice/change_form.html:7
