@@ -188,7 +188,8 @@ class Shipper(BaseShipper):
         boxes = []
         for box in Box.objects.all():
             boxes.append(Package((box.length, box.width, box.height)))
-        packed, rest = binpack(packages, boxes)
+
+        packed, rest = self.binpack(packages, boxes)
         parcels = []
         if not rest:
             for packs, bin in packed:
@@ -197,3 +198,26 @@ class Shipper(BaseShipper):
                     parcels.append((Parcel(length = bin[0], width=bin[1],
                                            height=bin[2], weight=weight),pack))
         return parcels, rest
+
+    def binpack(self, packages, boxes):
+        def dims(packs):
+            """
+            Format Package list into shorter key for cache
+            :param packs: an iterable of
+                canada_post_dp_shipping.utils.package.Package
+            :return: a string
+            """
+            import hashlib
+            lines = [",".join((str(p.length), str(p.width), str(p.heigth), str(p.width))) for p in packs]
+            return hashlib.sha1("({})".format(",".join("({})".format(l) for l in lines))).hexdigest()
+        key = 'CP-binpack-p={}:b={}'.format(
+            dims(packages),
+            dims(boxes))
+        res = cache.get(key)
+        if res is not None:
+            log.debug('return cached %s', res, extra={'cache-key': key})
+            return res
+        res = binpack(packages, boxes)
+        cache.set(key, res)
+        log.debug('return calculated %s', res, extra={'cache-key': key})
+        return res
