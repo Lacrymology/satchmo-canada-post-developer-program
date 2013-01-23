@@ -15,6 +15,7 @@ def get_destination(contact):
                            last_name=contact.last_name),
                        address=(contact.shipping_address.street1,
                                 contact.shipping_address.street2),
+                       phone=contact.primary_phone,
                        city=contact.shipping_address.city,
                        province=contact.shipping_address.state)
 
