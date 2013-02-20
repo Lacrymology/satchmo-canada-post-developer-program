@@ -1,11 +1,18 @@
 from canada_post import PROD, DEV
 from canada_post.util.address import Origin, Destination
+from l10n.models import AdminArea
+
 
 def get_origin(shop_details):
+    # I need to transform the province into it's code, so..
+    try:
+        province = AdminArea.objects.get(name__iexact=shop_details.state).abbrev
+    except AdminArea.DoesNotExist:
+        province = shop_details.state
     return Origin(postal_code=shop_details.postal_code,
                   company=shop_details.store_name, phone=shop_details.phone,
                   address=(shop_details.street1, shop_details.street2),
-                  city=shop_details.city, province=shop_details.state)
+                  city=shop_details.city, province=province)
 
 def get_destination(contact):
     return Destination(postal_code=contact.shipping_address.postal_code,
