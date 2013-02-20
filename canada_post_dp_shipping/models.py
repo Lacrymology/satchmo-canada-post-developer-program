@@ -87,6 +87,8 @@ class OrderShippingService(models.Model):
                                                     this_id=self.id)
 
     def shipments_created(self):
+        if self.parceldescription_set.count() <= 0:
+            return False
         try:
             return all(bool(parcel.shipment)
                 for parcel in self.parceldescription_set.all())
