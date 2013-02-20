@@ -65,6 +65,7 @@ class OrderShippingService(models.Model):
     order = models.OneToOneField(Order, verbose_name=_("order"), editable=False)
     code = models.CharField(max_length=16, verbose_name=_("code"),
                             help_text=_("Internal Canada Post product code"))
+    transmitted = models.BooleanField(editable=False, default=False)
 
     class Meta:
         verbose_name = _('order shipping service')

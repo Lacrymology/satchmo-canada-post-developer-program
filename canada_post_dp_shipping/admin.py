@@ -59,9 +59,9 @@ class OrderShippingAdmin(admin.ModelAdmin):
     """
     fields = ['order', 'code']
     inlines = [ParcelInline]
-    readonly_fields = ['order']
+    readonly_fields = ['order', 'transmitted']
     list_display = ['__unicode__', 'order', 'code', 'parcel_count',
-                    'shipments_created', 'has_labels']
+                    'shipments_created', 'has_labels', 'transmitted']
     actions = [
         'void_shipments',
         'get_labels',
