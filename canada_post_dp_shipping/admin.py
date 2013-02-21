@@ -264,6 +264,22 @@ class OrderShippingAdmin(admin.ModelAdmin):
     def transmit_shipments(self, request, queryset=None, id=-1):
         if id >= 0:
             return HttpResponseRedirect("..")
+
+        from satchmo_store.shop.models import Config
+        shop_details = Config.objects.get_current()
+        cpa_kwargs = canada_post_api_kwargs(self.settings)
+        cpa = CanadaPostAPI(**cpa_kwargs)
+        origin = get_origin(shop_details)
+
+        groups = []
+        order_shippings = []
+
+        for order_shipping in OrderShippingService.objects.filter(
+                transmitted=False):
+            if order_shipping.shipments_created():
+                group = unicode(order_shipping.shipping_group())
+                groups.append(group)
+                order_shippings.append(order_shipping)
     transmit_shipments.short_description = _("Transmit shipments for the "
                                              "selected orders")
 site.register(OrderShippingService, OrderShippingAdmin)
