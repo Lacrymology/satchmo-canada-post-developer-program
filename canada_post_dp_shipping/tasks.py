@@ -40,6 +40,11 @@ try:
         except Shipment.DoesNotExist:
             log.warning("Shipment %s doesn't exist. Has it been canceled?",
                         shipment_id)
+
+    @task
+    def get_manifests_async(*args, **kwargs):
+        return get_manifests(*args, **kwargs)
+
     USE_CELERY = True
 except ImportError, e:
     log.info("Not using celery: %s", e)
