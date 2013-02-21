@@ -280,6 +280,8 @@ class OrderShippingAdmin(admin.ModelAdmin):
                 group = unicode(order_shipping.shipping_group())
                 groups.append(group)
                 order_shippings.append(order_shipping)
+        if groups:
+            links = cpa.transmit_shipments(origin, groups)
     transmit_shipments.short_description = _("Transmit shipments for the "
                                              "selected orders")
 site.register(OrderShippingService, OrderShippingAdmin)
