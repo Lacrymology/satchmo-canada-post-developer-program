@@ -141,8 +141,7 @@ class OrderShippingAdmin(admin.ModelAdmin):
                                                     cpa.auth.username,
                                                     cpa.auth.password),
                                               # download labels in 3 minutes
-                                              #countdown=3*60)
-                                              countdown=1)
+                                              countdown=3*60)
 
                 cnt += 1
             self.message_user(request, _(u"{count} shipments created for order "
