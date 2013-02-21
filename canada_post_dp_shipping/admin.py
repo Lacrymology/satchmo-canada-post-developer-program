@@ -8,7 +8,7 @@ import zipfile
 from canada_post_dp_shipping.utils import (get_origin, get_destination,
                                            canada_post_api_kwargs)
 from django.shortcuts import get_object_or_404, render
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _, ungettext_lazy
 from django.contrib.admin.sites import site
 from django.contrib import admin, messages
 from django.http import (HttpResponseRedirect, HttpResponse)
@@ -295,6 +295,11 @@ class OrderShippingAdmin(admin.ModelAdmin):
                 from canada_post_dp_shipping.tasks import get_manifests
                 get_manifests(links)
 
+        group_count = len(groups)
+        self.message_user(request, ungettext_lazy(
+            "Transmitted shipments for {count} group".format(count=group_count),
+            "Transmitted shipments for {count} groups".format(count=group_count),
+            group_count))
     transmit_shipments.short_description = _("Transmit shipments for the "
                                              "selected orders")
 site.register(OrderShippingService, OrderShippingAdmin)
