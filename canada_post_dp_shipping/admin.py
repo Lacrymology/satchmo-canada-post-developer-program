@@ -288,6 +288,13 @@ class OrderShippingAdmin(admin.ModelAdmin):
                 "couple of minutes".format(count=manifest_count),
                 "{count} manifests generated. They will be sent via email in a "
                 "couple of minutes".format(manifest_count), manifest_count))
+            if USE_CELERY:
+                from canada_post_dp_shipping.tasks import get_manifests_async
+                get_manifests_async.apply_async(args=(links), 1)
+            else:
+                from canada_post_dp_shipping.tasks import get_manifests
+                get_manifests(links)
+
     transmit_shipments.short_description = _("Transmit shipments for the "
                                              "selected orders")
 site.register(OrderShippingService, OrderShippingAdmin)
