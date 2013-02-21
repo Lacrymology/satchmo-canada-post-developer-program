@@ -23,6 +23,13 @@ def get_manifests(links):
         filename = os.path.basename(link.rstrip('/'))
         manifest.artifact = File(manifest_pdf, filename)
         manifest.save()
+        shipments = cpa.get_manifest_shipments(cpa_manifest)
+        for shipment_id in shipments:
+            shipment = Shipment.objects.get(id=shipment_id).select_related()
+            shipping_detail = shipment.parcel.shipping_detail
+            shipping_detail.manifest = manifest
+            shipping_detail.save()
+
 try:
     from celery.task import task
     @task
