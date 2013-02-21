@@ -15,6 +15,11 @@ def get_manifests(links):
     settings = config_get_group('canada_post_dp_shipping')
     cpa_kwargs = canada_post_api_kwargs(settings)
     cpa = CanadaPostAPI(**cpa_kwargs)
+    for link in links:
+        log.debug("Getting manifest from %s", link['href'])
+        cpa_manifest = cpa.get_manifest(link)
+        manifest = Manifest(manifest=cpa_manifest)
+        manifest.save()
 try:
     from celery.task import task
     @task
