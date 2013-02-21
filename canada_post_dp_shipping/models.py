@@ -11,7 +11,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from canada_post.service import Service
 from canada_post.util.parcel import Parcel
-from canada_post.service.contract_shipping import (Shipment as CPAShipment)
+from canada_post.service.contract_shipping import (Shipment as CPAShipment,
+                                                   Manifest as CPAManifest)
 from jsonfield.fields import JSONField
 
 from satchmo_store.shop.models import Order, OrderCart
@@ -65,7 +66,11 @@ class OrderShippingService(models.Model):
     order = models.OneToOneField(Order, verbose_name=_("order"), editable=False)
     code = models.CharField(max_length=16, verbose_name=_("code"),
                             help_text=_("Internal Canada Post product code"))
-    transmitted = models.BooleanField(editable=False, default=False)
+    transmitted = models.BooleanField(editable=False, default=False,
+                                      verbose_name=_('transmitted'))
+    manifest = models.ForeignKey('canada_post_dp_shipping.Manifest',
+                                 verbose_name=_('manifest'),
+                                 null=True, editable=False)
 
     class Meta:
         verbose_name = _('order shipping service')
@@ -244,6 +249,61 @@ class ShipmentLink(models.Model):
     shipment = models.ForeignKey(Shipment)
     type = models.CharField(max_length=16)
     data = JSONField(blank=True)
+
+class Manifest(models.Model):
+    """
+    Manifest from Canada Post
+    """
+    def artifact_path(instance, filename):
+        return ("canada_post_dp_shipping/labels/"
+                "order_{order_id}__shipment_{shipment_id}__{filename}").format(
+            order_id=instance.parcel.shipping_detail.order.id,
+            shipment_id = instance.id, filename=filename)
+    po_number = models.CharField(max_length=10)
+    artifact = models.FileField(upload_to=artifact_path, blank=True, null=True,
+                                verbose_name=_('artifact'))
+    def __init__(self, *args, **kwargs):
+        if 'manifest' in kwargs:
+            manifest = kwargs.pop('manifest')
+            kwargs.update({
+                'po_number': manifest.po_number,
+            })
+            self.manifest = manifest
+        super(Manifest, self).__init__(*args, **kwargs)
+
+    def get_manifest(self):
+        """
+        Creates a canada_post.utils.Manifest object for use with the
+        Canada Post API
+        """
+        # if this instance was created from a Shipment, we've got it saved.
+        if getattr(self, 'manifest', None):
+            return self.manifest
+            # else, we need to construct it
+        kwargs = {
+            'po-number': self.po_number,
+            'links': {}
+        }
+        for link in self.shipmentlink_set.all():
+            kwargs['links'][link.type] = link.data
+        return CPAManifest(**kwargs)
+
+class ManifestLink(models.Model):
+    """
+    Any number of links returned by Canada Post at GetManifest
+    """
+    manifest = models.ForeignKey(Manifest)
+    type = models.CharField(max_length=16)
+    data = JSONField(blank=True)
+
+@receiver(post_save, sender=Manifest)
+def create_manifest_links(sender, instance, created, **kwargs):
+    if created:
+        manifest = getattr(instance, 'manifest', None)
+        if manifest:
+            for type, link in getattr(manifest, 'links', {}).items():
+                link = ManifestLink(manifest=instance, type=type, data=link)
+                link.save()
 
 @receiver(post_save, sender=Order)
 def create_shipping_details(sender, instance, **kwargs):
