@@ -282,6 +282,12 @@ class OrderShippingAdmin(admin.ModelAdmin):
                 order_shippings.append(order_shipping)
         if groups:
             links = cpa.transmit_shipments(origin, groups)
+            manifest_count = len(links)
+            self.message_user(request, ungettext_lazy(
+                "{count} manifest generated. It will be sent via email in a "
+                "couple of minutes".format(count=manifest_count),
+                "{count} manifests generated. They will be sent via email in a "
+                "couple of minutes".format(manifest_count), manifest_count))
     transmit_shipments.short_description = _("Transmit shipments for the "
                                              "selected orders")
 site.register(OrderShippingService, OrderShippingAdmin)
