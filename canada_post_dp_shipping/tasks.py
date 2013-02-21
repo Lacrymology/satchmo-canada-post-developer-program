@@ -19,6 +19,9 @@ def get_manifests(links):
         log.debug("Getting manifest from %s", link['href'])
         cpa_manifest = cpa.get_manifest(link)
         manifest = Manifest(manifest=cpa_manifest)
+        manifest_pdf = cpa.get_artifact(cpa_manifest)
+        filename = os.path.basename(link.rstrip('/'))
+        manifest.artifact = File(manifest_pdf, filename)
         manifest.save()
 try:
     from celery.task import task
