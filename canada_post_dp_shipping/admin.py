@@ -162,7 +162,6 @@ class OrderShippingAdmin(admin.ModelAdmin):
                                            "Canada Post server for the "
                                            "selected orders")
 
-
     def get_labels(self, request, queryset=None, id=-1):
         if queryset is None:
             queryset = [get_object_or_404(OrderShippingService,
@@ -282,6 +281,9 @@ class OrderShippingAdmin(admin.ModelAdmin):
                 order_shippings.append(order_shipping)
         if groups:
             links = cpa.transmit_shipments(origin, groups)
+            for order_shipping in order_shippings:
+                order_shipping.transmitted = True
+                order_shipping.save()
             manifest_count = len(links)
             self.message_user(request, ungettext_lazy(
                 "{count} manifest generated. It will be sent via email in a "
