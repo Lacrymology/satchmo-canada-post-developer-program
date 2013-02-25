@@ -1,0 +1,3 @@
+List of manifests generated on {% now "DATETIME_FORMAT" %}
+{% for manifest in manifests %}
+{{ manifest.po_number}}: http://{{ site.domain }}{{ manifest.artifact.url }}{% endfor %}
