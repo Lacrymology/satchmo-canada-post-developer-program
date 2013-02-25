@@ -256,9 +256,8 @@ class Manifest(models.Model):
     """
     def artifact_path(instance, filename):
         return ("canada_post_dp_shipping/labels/"
-                "order_{order_id}__shipment_{shipment_id}__{filename}").format(
-            order_id=instance.parcel.shipping_detail.order.id,
-            shipment_id = instance.id, filename=filename)
+                "{po_number}__{filename}").format(po_number=instance.po_number,
+                                                 filename=filename)
     po_number = models.CharField(max_length=10)
     artifact = models.FileField(upload_to=artifact_path, blank=True, null=True,
                                 verbose_name=_('artifact'))
@@ -270,6 +269,11 @@ class Manifest(models.Model):
             })
             self.manifest = manifest
         super(Manifest, self).__init__(*args, **kwargs)
+
+    def __unicode__(self):
+        return "Manifest object for orders [%s]" % u",".join(
+            unicode(ord_ship.order) for ord_ship in self.ordershippingservice_set.all()
+        )
 
     def get_manifest(self):
         """
@@ -293,7 +297,7 @@ class ManifestLink(models.Model):
     Any number of links returned by Canada Post at GetManifest
     """
     manifest = models.ForeignKey(Manifest)
-    type = models.CharField(max_length=16)
+    type = models.CharField(max_length=64)
     data = JSONField(blank=True)
 
 @receiver(post_save, sender=Manifest)
