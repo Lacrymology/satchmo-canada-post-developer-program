@@ -1,11 +1,16 @@
 import logging
+from django.contrib.sites.models import Site
 from django.core.files import File
-import requests
+from django.template import Context
+from django.template.loader import get_template
 from canada_post.api import CanadaPostAPI
-from canada_post_dp_shipping.models import Shipment, Manifest
+from canada_post_dp_shipping.models import (Shipment, Manifest,
+                                            OrderShippingService)
 from livesettings import config_get_group
-from canada_post_dp_shipping.utils import canada_post_api_kwargs
+from canada_post_dp_shipping.utils import canada_post_api_kwargs, get_origin
+from django.utils.translation import ungettext_lazy
 import os
+from satchmo_store.mail import send_store_mail
 
 log = logging.getLogger('canada_post_dp_shipping.tasks')
 USE_CELERY = False
@@ -15,20 +20,82 @@ def get_manifests(links):
     settings = config_get_group('canada_post_dp_shipping')
     cpa_kwargs = canada_post_api_kwargs(settings)
     cpa = CanadaPostAPI(**cpa_kwargs)
+    manifests = []
     for link in links:
         log.debug("Getting manifest from %s", link['href'])
         cpa_manifest = cpa.get_manifest(link)
         manifest = Manifest(manifest=cpa_manifest)
         manifest_pdf = cpa.get_artifact(cpa_manifest)
-        filename = os.path.basename(link.rstrip('/'))
+        filename = os.path.basename(link['href'].rstrip('/'))
+        if not filename.endswith('.pdf'):
+            filename += '.pdf'
         manifest.artifact = File(manifest_pdf, filename)
         manifest.save()
         shipments = cpa.get_manifest_shipments(cpa_manifest)
         for shipment_id in shipments:
-            shipment = Shipment.objects.get(id=shipment_id).select_related()
+            log.info("Setting manifest for shipment %s", shipment_id)
+            shipment = Shipment.objects.select_related().get(id=shipment_id)
             shipping_detail = shipment.parcel.shipping_detail
             shipping_detail.manifest = manifest
             shipping_detail.save()
+        manifests.append(manifest)
+
+    subject_template = get_template(
+        'canada_post_dp_shipping/admin/mail/manifests_subject.txt')
+    subject = subject_template.render(Context({
+        'manifests': manifests
+    })).strip()
+
+    site = Site.objects.get_current()
+    send_store_mail(subject, context={ 'site': site,
+                                       'manifests': manifests },
+                    template=("canada_post_dp_shipping/admin/mail/"
+                              "manifests_body.txt"), send_to_store=True)
+
+def transmit_shipments(queryset=None, send_msg=None):
+    if send_msg is None:
+        send_msg = lambda x: x
+
+    if queryset is None:
+        queryset = OrderShippingService.objects.all()
+
+    from satchmo_store.shop.models import Config
+    shop_details = Config.objects.get_current()
+    settings = config_get_group('canada_post_dp_shipping')
+    cpa_kwargs = canada_post_api_kwargs(settings)
+    cpa = CanadaPostAPI(**cpa_kwargs)
+    origin = get_origin(shop_details)
+
+    groups = []
+    order_shippings = []
+
+    for order_shipping in queryset.filter(
+            transmitted=False):
+        if order_shipping.shipments_created():
+            group = unicode(order_shipping.shipping_group())
+            groups.append(group)
+            order_shippings.append(order_shipping)
+    if groups:
+        links = cpa.transmit_shipments(origin, groups)
+        for order_shipping in order_shippings:
+            order_shipping.transmitted = True
+            order_shipping.save()
+        manifest_count = len(links)
+        send_msg(ungettext_lazy(
+            "{count} manifest generated. It will be sent via email in a "
+            "couple of minutes".format(count=manifest_count),
+            "{count} manifests generated. They will be sent via email in a "
+            "couple of minutes".format(count=manifest_count), manifest_count))
+        if USE_CELERY:
+            get_manifests_async.apply_async(args=(links,), cowntdown=1)
+        else:
+            get_manifests(links)
+
+    group_count = len(groups)
+    send_msg(ungettext_lazy(
+        "Transmitted shipments for {count} group".format(count=group_count),
+        "Transmitted shipments for {count} groups".format(count=group_count),
+        group_count))
 
 try:
     from celery.task import task
@@ -44,6 +111,10 @@ try:
     @task
     def get_manifests_async(*args, **kwargs):
         return get_manifests(*args, **kwargs)
+
+    @task
+    def transmit_shipments_async(*args, **kwargs):
+        return transmit_shipments(*args, **kwargs)
 
     USE_CELERY = True
 except ImportError, e:

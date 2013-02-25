@@ -1,6 +1,6 @@
 import logging
 from canada_post_dp_shipping.forms import ParcelDescriptionForm
-from canada_post_dp_shipping.tasks import USE_CELERY
+from canada_post_dp_shipping.tasks import USE_CELERY, transmit_shipments
 from django.core.files.base import File
 import os
 import tempfile
@@ -16,7 +16,7 @@ from django.http import (HttpResponseRedirect, HttpResponse)
 from canada_post.api import CanadaPostAPI
 from canada_post_dp_shipping.models import (Box, OrderShippingService,
                                             ParcelDescription, ShipmentLink,
-                                            Shipment)
+                                            Shipment, Manifest)
 
 from livesettings.functions import config_get_group
 
@@ -65,7 +65,7 @@ class OrderShippingAdmin(admin.ModelAdmin):
     actions = [
         'void_shipments',
         'get_labels',
-        #'transmit_shipments', # comment out for now
+        'transmit_shipments',
                ]
     actions_on_bottom = True
     actions_selection_counter = True
@@ -264,47 +264,18 @@ class OrderShippingAdmin(admin.ModelAdmin):
         if id >= 0:
             return HttpResponseRedirect("..")
 
-        from satchmo_store.shop.models import Config
-        shop_details = Config.objects.get_current()
-        cpa_kwargs = canada_post_api_kwargs(self.settings)
-        cpa = CanadaPostAPI(**cpa_kwargs)
-        origin = get_origin(shop_details)
+        send_msg = lambda message: self.message_user(request, message)
 
-        groups = []
-        order_shippings = []
+        transmit_shipments(queryset, send_msg=send_msg)
 
-        for order_shipping in OrderShippingService.objects.filter(
-                transmitted=False):
-            if order_shipping.shipments_created():
-                group = unicode(order_shipping.shipping_group())
-                groups.append(group)
-                order_shippings.append(order_shipping)
-        if groups:
-            links = cpa.transmit_shipments(origin, groups)
-            for order_shipping in order_shippings:
-                order_shipping.transmitted = True
-                order_shipping.save()
-            manifest_count = len(links)
-            self.message_user(request, ungettext_lazy(
-                "{count} manifest generated. It will be sent via email in a "
-                "couple of minutes".format(count=manifest_count),
-                "{count} manifests generated. They will be sent via email in a "
-                "couple of minutes".format(manifest_count), manifest_count))
-            if USE_CELERY:
-                from canada_post_dp_shipping.tasks import get_manifests_async
-                get_manifests_async.apply_async(args=(links), 1)
-            else:
-                from canada_post_dp_shipping.tasks import get_manifests
-                get_manifests(links)
-
-        group_count = len(groups)
-        self.message_user(request, ungettext_lazy(
-            "Transmitted shipments for {count} group".format(count=group_count),
-            "Transmitted shipments for {count} groups".format(count=group_count),
-            group_count))
     transmit_shipments.short_description = _("Transmit shipments for the "
                                              "selected orders")
 site.register(OrderShippingService, OrderShippingAdmin)
 
 class ShippingServiceDetailInline(admin.StackedInline):
-    model = OrderShippingAdmin
+    model = OrderShippingService
+
+class ManifestAdmin(admin.ModelAdmin):
+    inlines = [ShippingServiceDetailInline]
+
+site.register(Manifest, ManifestAdmin)
