@@ -1,6 +1,7 @@
 """
 Models for the canada post developer program's shipping method
 """
+from collections import Counter
 from os import path
 import requests
 from django.core.files import File
@@ -10,12 +11,14 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from canada_post.service import Service
-from canada_post.util.parcel import Parcel
+from canada_post.util.parcel import Parcel, Item
 from canada_post.service.contract_shipping import (Shipment as CPAShipment,
                                                    Manifest as CPAManifest)
 from jsonfield.fields import JSONField
 
 from satchmo_store.shop.models import Order, OrderCart
+from product.models import Product
+
 
 class Box(models.Model):
     """
@@ -116,8 +119,14 @@ class ParcelDescription(models.Model):
     shipping_detail = models.ForeignKey(OrderShippingService)
     box = models.ForeignKey(Box)
     parcel = models.TextField(verbose_name=_("parcel description"),
-                              help_text=_("List of packages that go inside "
-                                          "this parcel"),)
+                              help_text=_(
+                                  "List of packages that go inside this "
+                                  "parcel. If you modify this, please be sure "
+                                  "to maintain the "
+                                  "[(... (#&lt;product id&gt;)),"
+                                  "(...(#&lt;product id&gt;))] "
+                                  "structure because it is used to talk to the "
+                                  "Canada Post server"),)
     weight = models.DecimalField(max_digits=5, decimal_places=3,
                                  verbose_name=_("weight"),
                                  help_text=_("Total weight of the parcel, "
@@ -143,8 +152,37 @@ class ParcelDescription(models.Model):
         super(ParcelDescription, self).__init__(*args, **kwargs)
 
     def get_parcel(self):
+        def product_ids(description):
+            def get_number(pos):
+                if description[pos] != ")":
+                    return None
+                fr = description.rfind("(#", 0, pos) + 2
+                to = pos
+                return int(description[fr:to])
+
+            count = 0
+            numbers = []
+            pos = 0
+            for char in description:
+                if char == "(":
+                    count += 1
+                elif char == ")":
+                    count -= 1
+                    # we do this inside this "if" to avoid this happening on
+                    #  the first char which should be a '['
+                    if count == 0:
+                        number = get_number(pos - 1)
+                        if number is not None:
+                            numbers.append(number)
+                pos += 1
+            return numbers
+        ids = Counter(product_ids(self.parcel))
+        products = Product.objects.filter(id__in=ids)
+        items = [Item(amount=ids[p.id], description="Sporting goods",
+                      weight=p.smart_attr('weight'), price=p.unit_price)
+                 for p in products]
         return Parcel(length=self.box.length, width=self.box.width,
-                      height=self.box.height, weight=self.weight)
+                      height=self.box.height, weight=self.weight, items=items)
 
     def __unicode__(self):
         return u"Parcel({})".format(unicode(self.box))
@@ -258,6 +296,7 @@ class Manifest(models.Model):
         return ("canada_post_dp_shipping/labels/"
                 "{po_number}__{filename}").format(po_number=instance.po_number,
                                                  filename=filename)
+
     po_number = models.CharField(max_length=10)
     artifact = models.FileField(upload_to=artifact_path, blank=True, null=True,
                                 verbose_name=_('artifact'))
