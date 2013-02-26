@@ -1,1 +1,1 @@
-Manifests for {% now "DATE_FORMAT" %}
+Manifests for {% now "N j, Y" %}
