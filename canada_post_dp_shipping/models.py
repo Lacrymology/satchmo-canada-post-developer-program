@@ -275,6 +275,10 @@ class Manifest(models.Model):
             unicode(ord_ship.order) for ord_ship in self.ordershippingservice_set.all()
         )
 
+    def has_artifact(self):
+        return bool(self.artifact)
+    has_artifact.boolean = True
+
     def get_manifest(self):
         """
         Creates a canada_post.utils.Manifest object for use with the

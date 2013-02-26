@@ -16,7 +16,7 @@ from django.http import (HttpResponseRedirect, HttpResponse)
 from canada_post.api import CanadaPostAPI
 from canada_post_dp_shipping.models import (Box, OrderShippingService,
                                             ParcelDescription, ShipmentLink,
-                                            Shipment, Manifest)
+                                            Shipment, Manifest, ManifestLink)
 
 from livesettings.functions import config_get_group
 
@@ -274,8 +274,14 @@ site.register(OrderShippingService, OrderShippingAdmin)
 
 class ShippingServiceDetailInline(admin.StackedInline):
     model = OrderShippingService
+    extra = 0
+
+class ManifestLinkInline(admin.StackedInline):
+    model = ManifestLink
+    extra = 0
 
 class ManifestAdmin(admin.ModelAdmin):
-    inlines = [ShippingServiceDetailInline]
+    inlines = [ManifestLinkInline, ShippingServiceDetailInline,]
+    list_display = ['__unicode__', 'has_artifact']
 
 site.register(Manifest, ManifestAdmin)
