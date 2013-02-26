@@ -51,4 +51,13 @@ actual sizes and weights of the packed parcels, and then hit Create Shipments on
 the upper right corner of that admin page, and then the "download labels"
 (this might take a couple of minutes on Canada Post's side to work).
 
-Soon that last step will be automatizable via djcelery
+If djcelery is installed, that last step will happen automatically.
+
+
+Settings
+--------
+
+CANADA_POST_DESCRIPTION is the customs description a product will be given.
+ Sorry, no per-product description yet. We're thinking of using satchmo's
+ product attributes for that in the near future. If this setting is not defined
+ it will default to 'goods', which is probably not good.

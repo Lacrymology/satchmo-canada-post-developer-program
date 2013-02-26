@@ -2,6 +2,7 @@
 Models for the canada post developer program's shipping method
 """
 from collections import Counter
+from django.conf import settings
 from os import path
 import requests
 from django.core.files import File
@@ -178,7 +179,9 @@ class ParcelDescription(models.Model):
             return numbers
         ids = Counter(product_ids(self.parcel))
         products = Product.objects.filter(id__in=ids)
-        items = [Item(amount=ids[p.id], description="Sporting goods",
+        items = [Item(amount=ids[p.id],
+                      description=getattr(settings, 'CANADA_POST_DESCRIPTION',
+                                                    'goods'),
                       weight=p.smart_attr('weight'), price=p.unit_price)
                  for p in products]
         return Parcel(length=self.box.length, width=self.box.width,
