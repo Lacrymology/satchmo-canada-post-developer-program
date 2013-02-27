@@ -1,4 +1,5 @@
 import logging
+from canada_post.service import Option
 from canada_post_dp_shipping.forms import ParcelDescriptionForm
 from canada_post_dp_shipping.tasks import USE_CELERY, transmit_shipments
 from django.core.files.base import File
@@ -120,6 +121,10 @@ class OrderShippingAdmin(admin.ModelAdmin):
             origin = get_origin(shop_details)
 
             destination = get_destination(order_shipping.order.contact)
+            options = None
+            if destination.country_code != 'CA':
+                # TODO: make this selectable through website
+                options = [Option(code='RASE')]
             group = unicode(order_shipping.shipping_group())
             cnt = 0
             exs = 0
@@ -132,7 +137,8 @@ class OrderShippingAdmin(admin.ModelAdmin):
                     cpa_ship = cpa.create_shipment(
                         parcel=parcel.get_parcel(), origin=origin,
                         destination=destination,
-                        service=order_shipping.get_service(), group=group)
+                        service=order_shipping.get_service(), group=group,
+                        options=options)
                     shipment = Shipment(shipment=cpa_ship, parcel=parcel)
                     shipment.save()
                     if USE_CELERY:
