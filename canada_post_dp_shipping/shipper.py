@@ -216,7 +216,7 @@ class Shipper(BaseShipper):
         if res is not None:
             log.debug('return cached %s', res, extra={'cache-key': key})
             return res
-        res = binpack(packages, boxes, 1000)
+        res = binpack(packages, boxes, self.settings.PACKING_ITERATIONS.value)
         cache.set(key, res)
         log.debug('return calculated %s', res, extra={'cache-key': key})
         return res

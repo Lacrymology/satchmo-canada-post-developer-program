@@ -68,6 +68,15 @@ config_register_list(
                             'API Key Number'),
                 default=u'CPC_DEMO_XML'),
 
+    PositiveIntegerValue(SHIPPING_GROUP,
+                         'PACKING_ITERATIONS',
+                         description=_("Number of iterations to try to "
+                                       "automatically generate the parcels"),
+                         help_text=_("If the parcels calculations take too "
+                                     "long for orders with a large number of "
+                                     "items, try making this smaller"),
+                         default=5000),
+
     ContractShipping,
 
     StringValue(SHIPPING_GROUP,
