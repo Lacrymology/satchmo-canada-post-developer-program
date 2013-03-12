@@ -193,6 +193,7 @@ def packing_cost(packs, bin):
 def sort_bins(bins, packages):
     """
     sorts the bins according to how many of the packages can each accomodate
+    and filters out the ones that cannot fit any
     """
     each = {}
     for bin in bins:
@@ -203,6 +204,7 @@ def sort_bins(bins, packages):
     def bincmp(s, ot):
         c = cmp(each[s], each[ot])
         return c or cmp(s.girth, ot.girth)
+    bins = filter(lambda x: each[x] != 0, bins)
     bins.sort(cmp=bincmp, reverse=True)
     return bins
 
