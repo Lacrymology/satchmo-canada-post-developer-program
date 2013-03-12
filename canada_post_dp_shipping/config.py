@@ -70,8 +70,7 @@ config_register_list(
 
     PositiveIntegerValue(SHIPPING_GROUP,
                          'PACKING_ITERATIONS',
-                         description=_("Number of iterations to try to "
-                                       "automatically generate the parcels"),
+                         description=_("Packing iterations"),
                          help_text=_("If the parcels calculations take too "
                                      "long for orders with a large number of "
                                      "items, try making this smaller"),
