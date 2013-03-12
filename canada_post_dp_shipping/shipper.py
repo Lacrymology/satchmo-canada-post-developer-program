@@ -141,9 +141,8 @@ class Shipper(BaseShipper):
                 W=parcel.weight, w=parcel.width, h=parcel.height, l=parcel.length,
                 fr=origin.postal_code, to=destination.postal_code
             )
-            if cache.has_key(cache_key):
-                parcel_services = cache.get(cache_key)
-            else:
+            parcel_services = cache.get(cache_key)
+            if parcel_services is None:
                 try:
                     parcel_services = cpa.get_rates(parcel, origin, destination)
                 except CanadaPostError, e:
@@ -217,7 +216,7 @@ class Shipper(BaseShipper):
         if res is not None:
             log.debug('return cached %s', res, extra={'cache-key': key})
             return res
-        res = binpack(packages, boxes)
+        res = binpack(packages, boxes, 1000)
         cache.set(key, res)
         log.debug('return calculated %s', res, extra={'cache-key': key})
         return res
