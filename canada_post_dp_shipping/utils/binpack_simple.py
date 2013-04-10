@@ -222,6 +222,8 @@ def iterate_permutations(original_packages, bins, iterlimit):
     packlist = []
     packages = sorted(original_packages, reverse=True)
     bins = sort_bins(bins, packages)
+    if not bins:
+        return [], original_packages
 
     for ix, bin in enumerate(bins):
         packs, rest = allpermutations(packages, bin, iterlimit)
