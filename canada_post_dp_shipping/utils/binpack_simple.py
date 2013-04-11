@@ -204,7 +204,7 @@ def sort_bins(bins, packages):
                 each[bin] += 1
     def bincmp(s, ot):
         c = cmp(each[s], each[ot])
-        return c or cmp(s.girth, ot.girth)
+        return c or cmp(ot.girth, s.girth)
     bins = filter(lambda x: each[x] != 0, bins)
     bins.sort(cmp=bincmp, reverse=True)
     return bins
