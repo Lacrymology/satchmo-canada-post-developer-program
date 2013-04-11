@@ -228,6 +228,8 @@ def iterate_permutations(original_packages, bins, iterlimit):
 
     for ix, bin in enumerate(bins):
         packs, rest = allpermutations(packages, bin, iterlimit)
+        if not packs:
+            continue
 
         cost = packing_cost(packs, bin)
         newpacks = []
