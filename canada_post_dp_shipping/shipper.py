@@ -130,7 +130,7 @@ class Shipper(BaseShipper):
                                       "add_boxes.txt"), send_to_store=True)
             raise ParcelDimensionError, error_message
         log.debug(u"Calculated Parcels: [%s]", u",".join(u"({},[{}])".format(
-            pr, ",".join(unicode(pk) for pk in pks)) for pr, pks in parcels))
+            pr, u",".join(unicode(pk) for pk in pks)) for pr, pks in parcels))
         origin = get_origin(shop_details)
         destination = get_destination(contact)
 
@@ -149,7 +149,7 @@ class Shipper(BaseShipper):
                     if self.settings.RAISE_TOO_LARGE.value and e.code == 9111:
                         raise ParcelDimensionError, e.message
                     else:
-                        log.error("Canada Post returned with error: %s|%s",
+                        log.error(u"Canada Post returned with error: %s|%s",
                                   e.code, e.message)
                     parcel_services = []
                 cache.set(cache_key, parcel_services)
@@ -175,7 +175,7 @@ class Shipper(BaseShipper):
             height = item.smart_attr("height")
             weight = item.smart_attr("weight")
             if not all((length, width, height, weight)):
-                log.error("Dimensions error in item %s(#%d): (%s, %s, %s, %s)",
+                log.error(u"Dimensions error in item %s(#%d): (%s, %s, %s, %s)",
                           item, item.id, length, width, height, weight)
                 raise ParcelDimensionError, (u"Dimension errors in item {}: "
                                        u"({},{},{},{})").format(item, length,
@@ -214,9 +214,9 @@ class Shipper(BaseShipper):
             dims(boxes))
         res = cache.get(key)
         if res is not None:
-            log.debug('return cached %s', res, extra={'cache-key': key})
+            log.debug(u'return cached %s', res, extra={'cache-key': key})
             return res
         res = binpack(packages, boxes, self.settings.PACKING_ITERATIONS.value)
         cache.set(key, res)
-        log.debug('return calculated %s', res, extra={'cache-key': key})
+        log.debug(u'return calculated %s', res, extra={'cache-key': key})
         return res
