@@ -214,9 +214,11 @@ class Shipper(BaseShipper):
             dims(boxes))
         res = cache.get(key)
         if res is not None:
-            log.debug('return cached %s', str(res), extra={'cache-key': key})
+            #log.debug('return cached %s', str(res), extra={'cache-key': key})
+            log.debug('return cached')
             return res
         res = binpack(packages, boxes, self.settings.PACKING_ITERATIONS.value)
         cache.set(key, res)
-        log.debug('return calculated %s', str(res), extra={'cache-key': key})
+        #log.debug('return calculated %s', str(res), extra={'cache-key': key})
+        log.debug('return calculated', extra={'cache-key': key})
         return res
