@@ -7,7 +7,8 @@ from canada_post.api import CanadaPostAPI
 from canada_post_dp_shipping.models import (Shipment, Manifest,
                                             OrderShippingService)
 from livesettings import config_get_group
-from canada_post_dp_shipping.utils import canada_post_api_kwargs, get_origin
+from canada_post_dp_shipping.utils import (canada_post_api_kwargs, get_origin,
+                                           time_f)
 from django.utils.translation import ungettext_lazy
 import os
 from satchmo_store.mail import send_store_mail
@@ -23,15 +24,20 @@ def get_manifests(links):
     manifests = []
     for link in links:
         log.debug("Getting manifest from %s", link['href'])
-        cpa_manifest = cpa.get_manifest(link)
+        cpa_manifest = time_f(cpa.get_manifest,
+                              'canada-post-dp-shipping.get-manifest', link)
         manifest = Manifest(manifest=cpa_manifest)
-        manifest_pdf = cpa.get_artifact(cpa_manifest)
+        manifest_pdf = time_f(cpa.get_artifact,
+                              'canada-post-dp-shipping.get-artifact',
+                              cpa_manifest)
         filename = os.path.basename(link['href'].rstrip('/'))
         if not filename.endswith('.pdf'):
             filename += '.pdf'
         manifest.artifact = File(manifest_pdf, filename)
         manifest.save()
-        shipments = cpa.get_manifest_shipments(cpa_manifest)
+        shipments = time_f(cpa.get_manifest_shipments,
+                           'canada-post-dp-shipping.get-manifest-shipments',
+                           cpa_manifest)
         for shipment_id in shipments:
             log.info("Setting manifest for shipment %s", shipment_id)
             shipment = Shipment.objects.select_related().get(id=shipment_id)
@@ -76,7 +82,9 @@ def transmit_shipments(queryset=None, send_msg=None):
             groups.append(group)
             order_shippings.append(order_shipping)
     if groups:
-        links = cpa.transmit_shipments(origin, groups)
+        links = time_f(cpa.transmit_shipments,
+                       'canada-post-dp-shipping.transmit-shipments',
+                       origin, groups)
         for order_shipping in order_shippings:
             order_shipping.transmitted = True
             order_shipping.save()

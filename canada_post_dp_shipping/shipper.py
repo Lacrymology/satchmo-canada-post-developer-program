@@ -22,6 +22,7 @@ from satchmo_store.mail import send_store_mail
 from canada_post.api import CanadaPostAPI
 from canada_post.util.parcel import Parcel
 from canada_post_dp_shipping.models import Box
+from canada_post_dp_shipping.utils import time_f
 from canada_post_dp_shipping.utils.binpack_simple import binpack
 from canada_post_dp_shipping.utils.package import Package
 
@@ -98,8 +99,9 @@ class Shipper(BaseShipper):
         verbose = self.settings.VERBOSE_LOG.value
 
         self.transit_time = None # unknown transit time, as yet
-        self.is_valid, self.charges, self.services = self.get_rates(cart,
-                                                                   contact)
+        self.is_valid, self.charges, self.services = time_f(
+            self.get_rates, 'canada-post-dp-shipping.get-rates.all',
+            cart, contact)
         if self.services:
             self.transit_time = max(s.transit_time for s, p, d in self.services)
         self._calculated = True
@@ -144,7 +146,9 @@ class Shipper(BaseShipper):
             parcel_services = cache.get(cache_key)
             if parcel_services is None:
                 try:
-                    parcel_services = cpa.get_rates(parcel, origin, destination)
+                    parcel_services = time_f(
+                        cpa.get_rates, 'canada-post-dp-shipping.get-rates',
+                        parcel, origin, destination)
                 except CanadaPostError, e:
                     if self.settings.RAISE_TOO_LARGE.value and e.code == 9111:
                         raise ParcelDimensionError, e.message

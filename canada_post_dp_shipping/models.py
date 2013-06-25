@@ -19,6 +19,7 @@ from jsonfield.fields import JSONField
 
 from satchmo_store.shop.models import Order, OrderCart
 from product.models import Product
+from canada_post_dp_shipping.utils import time_f
 
 
 class Box(models.Model):
@@ -220,7 +221,8 @@ class Shipment(models.Model):
 
     def download_label(self, username, password):
         link = self.shipmentlink_set.get(type='label')
-        res = requests.get(link.data['href'], auth=(username, password))
+        res = time_f(requests.get, 'canada-post-dp-shipping.get-label',
+                     link.data['href'], auth=(username, password))
         if res.status_code == 202:
             raise Shipment.Wait
         if not res.ok:

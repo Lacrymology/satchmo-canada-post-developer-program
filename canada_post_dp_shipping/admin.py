@@ -7,7 +7,7 @@ import os
 import tempfile
 import zipfile
 from canada_post_dp_shipping.utils import (get_origin, get_destination,
-                                           canada_post_api_kwargs)
+                                           canada_post_api_kwargs, time_f)
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import ugettext_lazy as _, ungettext_lazy
 from django.contrib.admin.sites import site
@@ -134,7 +134,9 @@ class OrderShippingAdmin(admin.ModelAdmin):
                     if parcel.shipment:
                         exs += 1
                 except Shipment.DoesNotExist:
-                    cpa_ship = cpa.create_shipment(
+                    cpa_ship = time_f(
+                        cpa.create_shipment,
+                        'canada-post-dp-shipping.create-shipping',
                         parcel=parcel.get_parcel(), origin=origin,
                         destination=destination,
                         service=order_shipping.get_service(), group=group,
@@ -240,7 +242,9 @@ class OrderShippingAdmin(admin.ModelAdmin):
                 try:
                     shipment = parcel.shipment
                     cpa_shipment = shipment.get_shipment()
-                    if not cpa.void_shipment(cpa_shipment):
+                    if not time_f(cpa.void_shipment,
+                                  'canada-post-dp-shipping.void-shipment',
+                                  cpa_shipment):
                         errcnt += 1
                         self.message_user(request, _("Could not void shipment "
                                                      "{shipment_id} for order "
