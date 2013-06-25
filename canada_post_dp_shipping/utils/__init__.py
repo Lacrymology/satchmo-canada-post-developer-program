@@ -1,7 +1,13 @@
 from canada_post import PROD, DEV
 from canada_post.util.address import Origin, Destination
 from l10n.models import AdminArea
-
+import time
+try:
+    from django_statsd.clients import statsd
+    STATSD = True
+except ImportError:
+    import logging
+    STATSD = False
 
 def get_origin(shop_details):
     # I need to transform the province into it's code, so..
@@ -48,3 +54,14 @@ def canada_post_api_kwargs(settings, production=None):
     if settings.CONTRACT_SHIPPING.value:
         cpa_kwargs['contract_number'] = settings.CONTRACT_NUMBER.value
     return cpa_kwargs
+
+def time_f(fun, metric, *args, **kwargs):
+    start = time.time()
+    ret = fun(*args, **kwargs)
+    lapse = int((time.time() - start) * 1000)
+    if STATSD:
+        statsd.timing(metric, lapse)
+    else:
+        log = logging.getLogger(metric)
+        log.info('timing: %d', lapse)
+    return ret
