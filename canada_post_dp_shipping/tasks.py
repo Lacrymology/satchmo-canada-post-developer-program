@@ -24,30 +24,33 @@ def get_manifests(links):
     manifests = []
     for link in links:
         log.debug("Getting manifest from %s", link['href'])
-        cpa_manifest = time_f(cpa.get_manifest,
-                              'canada-post-dp-shipping.get-manifest', link)
-        manifest = Manifest(manifest=cpa_manifest)
-        manifest_pdf = time_f(cpa.get_artifact,
-                              'canada-post-dp-shipping.get-artifact',
-                              cpa_manifest)
-        filename = os.path.basename(link['href'].rstrip('/'))
-        if not filename.endswith('.pdf'):
-            filename += '.pdf'
-        manifest.artifact = File(manifest_pdf, filename)
-        manifest.save()
-        shipments = time_f(cpa.get_manifest_shipments,
-                           'canada-post-dp-shipping.get-manifest-shipments',
-                           cpa_manifest)
-        for shipment_id in shipments:
-            log.info("Setting manifest for shipment %s", shipment_id)
-            try:
-                shipment = Shipment.objects.select_related().get(id=shipment_id)
-                shipping_detail = shipment.parcel.shipping_detail
-                shipping_detail.manifest = manifest
-                shipping_detail.save()
-            except Shipment.DoesNotExist:
-                log.error("Requested shipment does not exist")
-        manifests.append(manifest)
+        try:
+            cpa_manifest = time_f(cpa.get_manifest,
+                                  'canada-post-dp-shipping.get-manifest', link)
+            manifest = Manifest(manifest=cpa_manifest)
+            manifest_pdf = time_f(cpa.get_artifact,
+                                  'canada-post-dp-shipping.get-artifact',
+                                  cpa_manifest)
+            filename = os.path.basename(link['href'].rstrip('/'))
+            if not filename.endswith('.pdf'):
+                filename += '.pdf'
+            manifest.artifact = File(manifest_pdf, filename)
+            manifest.save()
+            shipments = time_f(cpa.get_manifest_shipments,
+                               'canada-post-dp-shipping.get-manifest-shipments',
+                               cpa_manifest)
+            for shipment_id in shipments:
+                log.info("Setting manifest for shipment %s", shipment_id)
+                try:
+                    shipment = Shipment.objects.select_related().get(id=shipment_id)
+                    shipping_detail = shipment.parcel.shipping_detail
+                    shipping_detail.manifest = manifest
+                    shipping_detail.save()
+                except Shipment.DoesNotExist:
+                    log.error("Requested shipment does not exist")
+            manifests.append(manifest)
+        except Exception, e:
+            log.error("Error processing manifest: %s", e, exc_info=True)
 
     subject_template = get_template(
         'canada_post_dp_shipping/admin/mail/manifests_subject.txt')
