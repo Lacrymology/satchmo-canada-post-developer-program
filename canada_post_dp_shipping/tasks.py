@@ -40,10 +40,13 @@ def get_manifests(links):
                            cpa_manifest)
         for shipment_id in shipments:
             log.info("Setting manifest for shipment %s", shipment_id)
-            shipment = Shipment.objects.select_related().get(id=shipment_id)
-            shipping_detail = shipment.parcel.shipping_detail
-            shipping_detail.manifest = manifest
-            shipping_detail.save()
+            try:
+                shipment = Shipment.objects.select_related().get(id=shipment_id)
+                shipping_detail = shipment.parcel.shipping_detail
+                shipping_detail.manifest = manifest
+                shipping_detail.save()
+            except Shipment.DoesNotExist:
+                log.error("Requested shipment does not exist")
         manifests.append(manifest)
 
     subject_template = get_template(
