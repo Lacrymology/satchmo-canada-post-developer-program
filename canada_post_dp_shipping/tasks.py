@@ -59,6 +59,8 @@ def get_manifests(links):
                               "manifests_body.txt"), send_to_store=True)
 
 def transmit_shipments(queryset=None, send_msg=None):
+    log.info("transmit_shipments invoked")
+    log.debug("queryset: %s", str(queryset))
     if send_msg is None:
         send_msg = lambda x: x
 
@@ -77,18 +79,27 @@ def transmit_shipments(queryset=None, send_msg=None):
 
     for order_shipping in queryset.filter(
             transmitted=False):
+        log.debug("processing order shipping: %s", order_shipping)
         if order_shipping.shipments_created():
+            log.debug("shipments created")
             group = unicode(order_shipping.shipping_group())
             groups.append(group)
             order_shippings.append(order_shipping)
+        else:
+            log.debug("shipments not created")
+    log.debug("using groups: %s", groups)
     if groups:
+        log.info("transmitting shipments")
         links = time_f(cpa.transmit_shipments,
                        'canada-post-dp-shipping.transmit-shipments',
                        origin, groups)
+        log.debug("received manifests: %s", links)
+        log.debug("marking order shippings as transmitted")
         for order_shipping in order_shippings:
             order_shipping.transmitted = True
             order_shipping.save()
         manifest_count = len(links)
+        log.info("received %d manifests", manifest_count)
         send_msg(ungettext_lazy(
             "{count} manifest generated. It will be sent via email in a "
             "couple of minutes".format(count=manifest_count),
