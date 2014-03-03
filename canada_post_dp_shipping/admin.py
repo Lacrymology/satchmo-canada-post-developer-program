@@ -93,10 +93,13 @@ class OrderShippingAdmin(admin.ModelAdmin):
         pass
 
     def create_shipments(self, request, id):
+        log.info("Creating shipments for %s", str(id))
         from satchmo_store.shop.models import Config
         order_shipping = get_object_or_404(OrderShippingService, id=id)
+        log.debug("Got OrderShippingService: %s", order_shipping)
 
         if request.method == 'GET':
+            log.debug("GET. Ask for confirmation")
             opts = self.model._meta
             title = _("Please confirm the parcels size and weight")
             object_name = unicode(opts.verbose_name)
@@ -114,6 +117,7 @@ class OrderShippingAdmin(admin.ModelAdmin):
                            "confirm_shipments.html"),
                           context)
         elif request.REQUEST.get('post', None) == "yes":
+            log.debug("POST with value=yes")
             # else method is POST
             shop_details = Config.objects.get_current()
             cpa_kwargs = canada_post_api_kwargs(self.settings)
@@ -130,10 +134,14 @@ class OrderShippingAdmin(admin.ModelAdmin):
             exs = 0
             for parcel in (order_shipping.parceldescription_set
                            .select_related().all()):
+                log.debug("Creating shipment for parcel %s", parcel)
                 try:
                     if parcel.shipment:
+                        log.warn("Shipment already existed in DB! %s",
+                                 parcel.shipment)
                         exs += 1
                 except Shipment.DoesNotExist:
+                    log.debug("Creating shipment")
                     cpa_ship = time_f(
                         cpa.create_shipment,
                         'canada-post-dp-shipping.create-shipping',
@@ -143,8 +151,10 @@ class OrderShippingAdmin(admin.ModelAdmin):
                         options=options)
                     shipment = Shipment(shipment=cpa_ship, parcel=parcel)
                     shipment.save()
+                    log.debug("Shipment created: %s", shipment)
                     if USE_CELERY:
                         from canada_post_dp_shipping.tasks import get_label
+                        log.debug("Calling get_label celery task")
                         get_label.apply_async(args=(shipment.id,
                                                     cpa.auth.username,
                                                     cpa.auth.password),
@@ -152,14 +162,20 @@ class OrderShippingAdmin(admin.ModelAdmin):
                                               countdown=3*60)
 
                 cnt += 1
+            log.info("%d shipments created for order %s",
+                     cnt, order_shipping.order)
             self.message_user(request, _(u"{count} shipments created for order "
                                          u"{order}").format(
                 count=cnt, order=order_shipping.order))
             if USE_CELERY:
+                log.debug("Using celery. Task to download labels should run in "
+                          "3 minutes")
                 self.message_user(request, _(u"Shipping labels will be "
                                              u"automatically downloaded in "
                                              u"three minutes"))
             if exs > 0:
+                log.warn("%d shipments already existed for order %s",
+                         exs, order_shipping.order)
                 messages.warning(request, _(u"{count} shipments already existed "
                                             u"for {order}").format(
                     count=exs, order=order_shipping.order))
@@ -171,6 +187,7 @@ class OrderShippingAdmin(admin.ModelAdmin):
                                            "selected orders")
 
     def get_labels(self, request, queryset=None, id=-1):
+        log.info("get_labels for %s", queryset or str(id))
         if queryset is None:
             queryset = [get_object_or_404(OrderShippingService,
                                           id=id)]
@@ -182,15 +199,21 @@ class OrderShippingAdmin(admin.ModelAdmin):
         files = []
         orders = []
         for shipping_service in queryset:
+            log.debug("processing shipping service %s", shipping_service)
             try:
                 for parcel in (shipping_service.parceldescription_set
                                .select_related().all()):
+                    log.debug("processing parcel %s", parcel)
                     shipment = parcel.shipment
+                    log.debug("shipment: %s", shipment)
                     if not shipment.label:
+                        log.debug("No label, downloading")
                         try:
                             shipment.download_label(args['username'],
                                                     args['password'])
                         except Shipment.Wait:
+                            log.debug("Failed downloading label. "
+                                      "Ask user to retry")
                             self.message_user(_("Failed downloading label for "
                                                 "shipment {id} because the "
                                                 "Canada Post server is busy, "
@@ -198,7 +221,10 @@ class OrderShippingAdmin(admin.ModelAdmin):
                                                 "minutes and try again").format(
                                 id=shipment.id))
                     files.append(shipment.label.file)
+                    log.debug("Got file (%d)", len(files))
             except Shipment.DoesNotExist:
+                log.debug("Requested labels, but shipment had not been created "
+                          "yet")
                 messages.error(request, _("One or more shipments for {order} "
                                           "haven't been yet created").format(
                     order=shipping_service.order))
@@ -206,6 +232,7 @@ class OrderShippingAdmin(admin.ModelAdmin):
             orders.append(shipping_service.order)
 
         if files:
+            log.debug("has files, making zip")
             tmp = tempfile.mkstemp(suffix=".zip")
             tf = zipfile.ZipFile(tmp[1], mode="w")
             for fileobj in files:
@@ -219,12 +246,14 @@ class OrderShippingAdmin(admin.ModelAdmin):
                                                '"labels_for_orders_{}.zip"').format(
                 "-".join(str(o.id) for o in orders))
         else:
+            log.debug("no files..")
             response = HttpResponseRedirect(request.path_info)
         return response
     get_labels.short_description = _("Get label links for the selected "
                                           "orders")
 
     def void_shipments(self, request, queryset=None, id=-1):
+        log.info("void shipments %s", queryset or str(id))
         if queryset is None:
             if queryset is None:
                 queryset = [get_object_or_404(OrderShippingService,
@@ -238,31 +267,40 @@ class OrderShippingAdmin(admin.ModelAdmin):
         gdcnt = 0
         dne = 0
         for detail in queryset:
+            log.debug('Processing detail: %s', detail)
             for parcel in detail.parceldescription_set.all().select_related():
+                log.debug("Processing parcel: %s", parcel)
                 try:
                     shipment = parcel.shipment
+                    log.debug("Got shipment %s", shipment)
                     cpa_shipment = shipment.get_shipment()
                     if not time_f(cpa.void_shipment,
                                   'canada-post-dp-shipping.void-shipment',
                                   cpa_shipment):
+                        log.warn("Problem voiding shipment: %s", cpa_shipment)
                         errcnt += 1
                         self.message_user(request, _("Could not void shipment "
                                                      "{shipment_id} for order "
                                                      "{order_id}").format(
                             shipment_id=shipment.id, order_id=detail.order.id))
                     else:
+                        log.debug("Shipment voided, deleting from DB")
                         gdcnt += 1
                         shipment.delete()
                 except Shipment.DoesNotExist:
+                    log.debug("Shipment does not exist!")
                     dne += 1
 
         if not errcnt:
+            log.info("All shipments voided")
             self.message_user(request, _("All shipments voided"))
         else:
+            log.warn("%d shipments voided, %d problems", gdcnt, errcnt)
             messages.warning(request, _("{good_count} shipments voided, "
                                         "{bad_count} problems").format(
                 good_count=gdcnt, bad_count=errcnt))
         if dne:
+            log.debug("%d shipments didn't exist", dne)
             self.message_user(request, _("{count} shipments didn't "
                                          "exist").format(count=dne))
         if id >= 0:
@@ -271,7 +309,11 @@ class OrderShippingAdmin(admin.ModelAdmin):
                                          "selected orders")
 
     def transmit_shipments(self, request, queryset=None, id=-1):
+        log.info("transmit_shipments %s", queryset or str(id))
         if id >= 0:
+            log.debug("got id, this should be called on the list view only")
+            self.message_user(request, "Transmit shipments should not be "
+                                       "called on individual shipment views")
             return HttpResponseRedirect("..")
 
         send_msg = lambda message: self.message_user(request, message)
