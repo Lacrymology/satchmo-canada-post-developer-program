@@ -203,7 +203,7 @@ class OrderShippingAdmin(admin.ModelAdmin):
                                           "haven't been yet created").format(
                     order=shipping_service.order))
 
-        orders.append(shipping_service.order)
+            orders.append(shipping_service.order)
 
         if files:
             tmp = tempfile.mkstemp(suffix=".zip")
